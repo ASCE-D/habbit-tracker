@@ -141,3 +141,133 @@ interface CreateHabitData {
 
 
 
+  export const getHabits = async (goalId?: string) => {
+    const session = await getServerSession(authOptions);
+  
+    if (!session || !session.user) {
+      return { error: "Unauthorized or insufficient permissions" };
+    }
+  
+    const userEmail = session.user.email;
+  
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: userEmail as string },
+      });
+  
+      if (!user) {
+        return { error: "User not found" };
+      }
+  
+      const habits = await prisma.habit.findMany({
+        where: { 
+          userId: user.id,
+          ...(goalId && { goalId }),
+        },
+        include: { obstacles: true },
+        orderBy: { createdAt: 'desc' },
+      });
+  
+      return { success: true, habits };
+    } catch (error: any) {
+      return { error: error.message || "Failed to fetch habits." };
+    }
+  };
+
+
+  export const getGoals = async () => {
+    const session = await getServerSession(authOptions);
+  
+    if (!session || !session.user) {
+      return { error: "Unauthorized or insufficient permissions" };
+    }
+  
+    const userEmail = session.user.email;
+  
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: userEmail as string },
+      });
+  
+      if (!user) {
+        return { error: "User not found" };
+      }
+  
+      const goals = await prisma.goal.findMany({
+        where: { userId: user.id },
+        include: { habits: true },
+        orderBy: { createdAt: 'desc' },
+      });
+  
+      return { success: true, goals };
+    } catch (error: any) {
+      return { error: error.message || "Failed to fetch goals." };
+    }
+  };
+  
+  
+
+  interface TrackHabitData {
+    habitId: string;
+    date: Date;
+    completed: boolean;
+    notes?: string;
+  }
+  
+  export const trackHabit = async (data: TrackHabitData) => {
+    const session = await getServerSession(authOptions);
+  
+    if (!session || !session.user) {
+      return { error: "Unauthorized or insufficient permissions" };
+    }
+  
+    const userEmail = session.user.email;
+  
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: userEmail as string},
+      });
+  
+      if (!user) {
+        return { error: "User not found" };
+      }
+  
+      // Check if the habit belongs to the user
+      const habit = await prisma.habit.findFirst({
+        where: {
+          id: data.habitId,
+          userId: user.id,
+        },
+      });
+  
+      if (!habit) {
+        return { error: "Habit not found or doesn't belong to the user" };
+      }
+  
+      // Create or update the habit tracker entry
+      const trackedHabit = await prisma.habitTracker.upsert({
+        where: {
+          habitId_date: {
+            habitId: data.habitId,
+            date: data.date,
+          },
+        },
+        update: {
+          completed: data.completed,
+          notes: data.notes,
+        },
+        create: {
+          habitId: data.habitId,
+          date: data.date,
+          completed: data.completed,
+          notes: data.notes,
+        },
+      });
+  
+      revalidatePath('/habit-tracker');
+  
+      return { success: true, trackedHabit };
+    } catch (error: any) {
+      return { error: error.message || "Failed to track habit." };
+    }
+  };
