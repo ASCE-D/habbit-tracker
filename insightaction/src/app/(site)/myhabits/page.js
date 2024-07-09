@@ -15,27 +15,33 @@ export default async function Dashboard() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
-
+ 
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Your Goals</h2>
         {goals.length === 0 ? (
           <p>You haven't set any goals yet.</p>
         ) : (
           <ul className="space-y-4">
-            {goals.map((goal) => (
-              <li key={goal.id} className="bg-white shadow rounded-lg p-4">
-                <h3 className="text-xl font-medium">{goal.title}</h3>
-                <p className="text-gray-600">{goal.description}</p>
-                <div className="mt-2">
-                  <h4 className="font-medium">Habits:</h4>
-                  <ul className="list-disc list-inside">
-                    {goal.habits.map((habit) => (
-                      <li key={habit.id}>{habit.title}</li>
-                    ))}
-                  </ul>
-                </div>
-              </li>
-            ))}
+        {goals.map((goal) => (
+  <li key={goal.id} className="bg-white shadow rounded-lg p-4">
+    <h3 className="text-xl font-medium">{goal.title}</h3>
+    <p className="text-gray-600">{goal.description}</p>
+    <div className="mt-2">
+      <h4 className="font-medium">Habits:</h4>
+      <ul className="list-disc list-inside">
+        {goal.habits.map((habit) => (
+          <li key={habit.id}>{habit.title}</li>
+        ))}
+      </ul>
+      <a 
+        href={`/myhabits/${goal.id}/add-habit`} 
+        className="mt-2 inline-block px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+      >
+        Add Habit
+      </a>
+    </div>
+  </li>
+))}
           </ul>
         )}
       </div>
