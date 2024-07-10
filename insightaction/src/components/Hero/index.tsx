@@ -6,7 +6,7 @@ const Hero = () => {
     <>
       <section
         id="home"
-        className="relative overflow-hidden bg-primary pt-[120px] md:pt-[130px] lg:pt-[160px]"
+        className="bg-primary relative overflow-hidden pt-[120px] md:pt-[130px] lg:pt-[160px]"
       >
         <div className="container">
           <div className="-mx-4 flex flex-wrap items-center">
@@ -29,16 +29,36 @@ const Hero = () => {
                   <li>
                     <Link
                       href="/createhabit"
-                      className="inline-flex items-center justify-center rounded-md bg-white px-7 py-[14px] text-center text-base font-medium text-dark shadow-1 transition duration-300 ease-in-out hover:bg-gray-2"
+                      className="text-dark shadow-1 hover:bg-gray-2 inline-flex items-center justify-center rounded-md bg-white/[0.12] px-4 py-[14px] text-center text-base font-medium transition duration-300 ease-in-out"
                     >
-                      Start Tracking Now
+                      <div className="ml-2 flex items-center justify-center">
+                        <div className=" font-semibold">Start Tracking Now</div>
+                        <div>
+                          <svg
+                            fill="none"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="align-middle"
+                          >
+                            <path
+                              d="M10.75 8.75L14.25 12L10.75 15.25"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="1.5"
+                            ></path>
+                          </svg>
+                        </div>
+                      </div>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="https://github.com/nextjsTemplates/play-nextjs"
                       target="_blank"
-                      className="flex items-center gap-4 rounded-md bg-white/[0.12] px-6 py-[14px] text-base font-medium text-white transition duration-300 ease-in-out hover:bg-white hover:text-dark"
+                      className="hover:text-dark flex items-center gap-4 rounded-md bg-white/[0.12] px-6 py-[14px] text-base font-medium text-white transition duration-300 ease-in-out hover:bg-white"
                     >
                       <svg
                         className="fill-current"
