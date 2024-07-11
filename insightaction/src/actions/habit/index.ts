@@ -174,7 +174,16 @@ interface CreateHabitData {
     }
   };
 
-
+  export async function fetchHabits() {
+    try {
+      const habits = await prisma.habit.findMany()
+      return habits
+    } catch (error) {
+      console.error('Error fetching habits:', error)
+      throw new Error('Failed to fetch habits')
+    }
+  }
+  
   export const getGoals = async () => {
     const session = await getServerSession(authOptions);
   
@@ -271,3 +280,88 @@ interface CreateHabitData {
       return { error: error.message || "Failed to track habit." };
     }
   };
+
+
+
+  export async function getHabit(habitId : any ) {
+    try {
+      const habit = await prisma.habit.findUnique({
+        where: { id: habitId },
+        include: {
+          obstacles: true,
+          goal: true,
+          stackedHabit: true,
+          stackedOnto: true,
+        },
+      })
+  
+      if (!habit) {
+        throw new Error('Habit not found')
+      }
+  
+      return habit
+    } catch (error) {
+      console.error('Error fetching habit:', error)
+      throw error
+    }
+  }
+  
+  export async function getHabitStreak(habitId : any) {
+    try {
+      const habit = await prisma.habit.findUnique({
+        where: { id: habitId },
+      })
+  
+      if (!habit) {
+        throw new Error('Habit not found')
+      }
+  
+      const trackedDays = await prisma.habitTracker.findMany({
+        where: { 
+          habitId: habitId,
+          completed: true
+        },
+        orderBy: { date: 'desc' },
+      })
+  
+      let streak = 0
+      let currentDate = new Date()
+      currentDate.setHours(0, 0, 0, 0)
+  
+      for (let trackedDay of trackedDays) {
+        const completionDate = new Date(trackedDay.date)
+        completionDate.setHours(0, 0, 0, 0)
+  
+        if (currentDate.getTime() - completionDate.getTime() > 86400000) {
+          // More than one day difference, streak is broken
+          break
+        }
+  
+        if (currentDate.getTime() === completionDate.getTime()) {
+          streak++
+          currentDate.setDate(currentDate.getDate() - 1)
+        }
+      }
+  
+      return streak
+    } catch (error) {
+      console.error('Error calculating habit streak:', error)
+      throw error
+    }
+  }
+
+  export async function stackHabit(habitId:any  , stackedHabitId: any , implementationIntention:any) {
+    try {
+      const updatedHabit = await prisma.habit.update({
+        where: { id: habitId },
+        data: { 
+          stackedHabitId,
+          implementationIntention
+        }
+      })
+      return updatedHabit
+    } catch (error) {
+      console.error('Error stacking habit:', error)
+      throw new Error('Failed to stack habit')
+    }
+  }

@@ -3,8 +3,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getHabits } from '@/actions/habit'
-import { trackHabit } from '@/actions/habit'
+import { getHabits } from "@/actions/habit"
+import { trackHabit } from "@/actions/habit"
 
 export default function HabitTracker() {
   const [habits, setHabits] = useState([])

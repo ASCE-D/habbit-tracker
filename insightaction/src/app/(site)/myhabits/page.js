@@ -89,6 +89,13 @@ export default async function Dashboard() {
                         </li>
                       ))}
                     </ul>
+
+                    <a 
+        href={`/habit/${habit.id}`} 
+        className="mt-2 inline-block px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+      >
+        view Habit
+      </a>
                   </div>
                 )}
               </li>
