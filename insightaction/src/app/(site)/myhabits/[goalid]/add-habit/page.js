@@ -22,9 +22,11 @@ export default function AddHabitPage({ params }) {
     obstacleSolution: ''
   })
 
+
   useEffect(() => {
-    if (params.goalId) {
-      setCurrentGoalId(params.goalId)
+    if (params.goalid) {
+      setCurrentGoalId(params.goalid)
+      console.log("goalId:", params.goalid)
     }
   }, [params.goalId])
 
@@ -39,7 +41,7 @@ export default function AddHabitPage({ params }) {
 
     const result = await createHabit({
       ...habitData,
-      goalId: params.goalId,
+      goalId: currentGoalId,
       time: new Date(habitData.time),
       obstacles: [
         {
@@ -74,7 +76,7 @@ export default function AddHabitPage({ params }) {
 
   return (
     <>
-       (
+       
         <form onSubmit={handleHabitSubmit}>
           <h2 className="text-2xl font-semibold mb-4">Create a New Habit for Your Goal</h2>
           {Object.entries(habitData).map(([key, value]) => (
