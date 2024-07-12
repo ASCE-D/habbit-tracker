@@ -17,7 +17,7 @@ import {
 
 export function Sidebar() {
   return (
-    <div className="h-screen bg-muted/40 hidden border-r md:block">
+    <div className="bg-dark hidden h-screen border-r md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
@@ -29,28 +29,28 @@ export function Sidebar() {
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
             <Link
               href="#"
-              className="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+              className="text-muted-foreground hover:text-primaryOrange flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
             >
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
             </Link>
             <Link
               href="#"
-              className="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+              className="text-muted-foreground hover:text-primaryOrange flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
             >
               <List className="h-4 w-4" />
               All Habits
             </Link>
             <Link
               href="#"
-              className="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+              className="text-muted-foreground hover:text-primaryOrange flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
             >
               <BarChart2 className="h-4 w-4" />
               Statistics
             </Link>
             <Link
               href="#"
-              className="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+              className="text-muted-foreground hover:text-primaryOrange flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
             >
               <Settings className="h-4 w-4" />
               Settings

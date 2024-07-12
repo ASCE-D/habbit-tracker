@@ -25,7 +25,7 @@ const config = {
         cardForeground: "hsl(60, 9.1%, 97.8%)",
         popover: "hsl(20, 14.3%, 4.1%)",
         popoverForeground: "hsl(60, 9.1%, 97.8%)",
-        primary: "hsl(20.5, 90.2%, 48.2%)",
+        primaryOrange: "hsl(20.5, 90.2%, 48.2%)",
         primaryForeground: "hsl(60, 9.1%, 97.8%)",
         secondary: "hsl(12, 6.5%, 15.1%)",
         secondaryForeground: "hsl(60, 9.1%, 97.8%)",

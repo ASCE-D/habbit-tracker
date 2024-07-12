@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AddHabitModal } from "./Addhabit";
 
 const HabitList = () => {
   const habits = [
@@ -26,6 +27,7 @@ const HabitList = () => {
   ];
 
   const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div className="bg-dark min-h-screen space-y-6 p-6 text-white">
@@ -55,12 +57,16 @@ const HabitList = () => {
           </Popover>
           <button className="rounded-full bg-gray-700 p-2">🔽</button>
         </div>
-        <button className="focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9  items-center justify-center whitespace-nowrap rounded-md px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50">
+        <button onClick={() => setIsModalOpen(true)} className="focus-visible:ring-ring bg-primaryOrange text-primary-foreground hover:bg-primary/90 inline-flex h-9  items-center justify-center whitespace-nowrap rounded-md px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50">
           <span className="pl-2">Set Goal</span>
           <span className="px-2">+</span>
         </button>
       </div>
-
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <AddHabitModal onClose={() => setIsModalOpen(false)} />
+        </div>
+      )}
       <div className="space-y-0">
         {habits.map((habit, index) =>
           habit && habit.name ? (
