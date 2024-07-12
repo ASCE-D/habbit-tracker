@@ -1,0 +1,13 @@
+-- DropForeignKey
+ALTER TABLE "Habit" DROP CONSTRAINT "Habit_goalId_fkey";
+
+-- AlterTable
+ALTER TABLE "Habit" ALTER COLUMN "goalId" DROP NOT NULL,
+ALTER COLUMN "cue" DROP NOT NULL,
+ALTER COLUMN "craving" DROP NOT NULL,
+ALTER COLUMN "response" DROP NOT NULL,
+ALTER COLUMN "reward" DROP NOT NULL,
+ALTER COLUMN "implementationIntention" DROP NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE "Habit" ADD CONSTRAINT "Habit_goalId_fkey" FOREIGN KEY ("goalId") REFERENCES "Goal"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -54,12 +54,12 @@ export const createGoal = async (data: {
 interface CreateHabitData {
     title: string;
     description?: string;
-    goalId: string;
-    cue: string;
-    craving: string;
-    response: string;
-    reward: string;
-    implementationIntention: string;
+    goalId?: string;
+    cue?: string;
+    craving?: string;
+    response?: string;
+    reward?: string;
+    implementationIntention?: string;
     environment: string;
     time: Date;
     stackedHabitId?: string;
@@ -95,9 +95,9 @@ interface CreateHabitData {
         },
       });
   
-      if (!goal) {
-        return { error: "Goal not found or doesn't belong to the user" };
-      }
+      // if (!goal) {
+      //   return { error: "Goal not found or doesn't belong to the user" };
+      // }
   
       // Create the habit
       const newHabit = await prisma.habit.create({
@@ -218,7 +218,7 @@ interface CreateHabitData {
 
   interface TrackHabitData {
     habitId: string;
-    date: Date;
+    date: Date | undefined;
     completed: boolean;
     notes?: string;
   }
@@ -258,7 +258,7 @@ interface CreateHabitData {
         where: {
           habitId_date: {
             habitId: data.habitId,
-            date: data.date,
+            date: data.date as Date,
           },
         },
         update: {
@@ -267,7 +267,7 @@ interface CreateHabitData {
         },
         create: {
           habitId: data.habitId,
-          date: data.date,
+          date: data.date as Date,
           completed: data.completed,
           notes: data.notes,
         },
@@ -365,3 +365,44 @@ interface CreateHabitData {
       throw new Error('Failed to stack habit')
     }
   }
+
+
+
+
+  export const getCompletedHabits = async (date: Date) => {
+    const session = await getServerSession(authOptions);
+  
+    if (!session || !session.user) {
+      return { error: "Unauthorized or insufficient permissions" };
+    }
+  
+    const userEmail = session.user.email;
+  
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: userEmail as string },
+      });
+  
+      if (!user) {
+        return { error: "User not found" };
+      }
+  
+      const completedHabits = await prisma.habitTracker.findMany({
+        where: {
+          habit: { userId: user.id },
+          date: {
+            gte: new Date(date.setHours(0, 0, 0, 0)),
+            lt: new Date(date.setHours(23, 59, 59, 999)),
+          },
+          completed: true,
+        },
+        include: {
+          habit: true,
+        },
+      });
+  
+      return { success: true, completedHabits };
+    } catch (error: any) {
+      return { error: error.message || "Failed to fetch completed habits." };
+    }
+  };

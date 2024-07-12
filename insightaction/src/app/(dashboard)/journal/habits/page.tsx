@@ -3,8 +3,14 @@ import {HabitDetails} from "@/components/Dashboard/Details";
 import HabitList from "@/components/Dashboard/Habit";
 // import Sidebar from "@/components/Dashboard/Sidebar";
 import { Sidebar } from "@/components/Dashboard/Test";
+import { fetchHabits, stackHabit } from '@/actions/habit'
 
-const page = () => {
+
+
+const  page = async () => {
+
+  const fetchedHabits   = await fetchHabits()
+  console.log("hello",fetchedHabits)
     const habit = {
       name: "Read for 30 minutes",
       streak: 5,
@@ -24,7 +30,7 @@ const page = () => {
 
       {/* Habit List - 40% width */}
       <div className="w-3/6 border-l border-r border-gray-700">
-        <HabitList />
+        <HabitList habits = {fetchedHabits} />
       </div>
 
       {/* Habit Details - 40% width */}

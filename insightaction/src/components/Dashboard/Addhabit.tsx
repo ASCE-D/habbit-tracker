@@ -19,22 +19,57 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-type CardProps = React.ComponentProps<typeof Card>;
+import { Textarea } from "@/components/ui/textarea";
+import { createHabit } from "@/actions/habit"; // Assume this is where createHabit function is exported
 
 export function AddHabitModal({
   className,
   onClose,
   ...props
-}: CardProps & { onClose: () => void }) {
-  const [habitName, setHabitName] = useState("");
-  const [frequency, setFrequency] = useState("daily");
+}:any) {
+  const [habitData, setHabitData] = useState({
+    title: "",
+    description: "",
+    
+    implementationIntention: "",
+    environment: "",
+    time: new Date(),
+    stackedHabitId: "",
+    obstacles: [{ description: "", solution: "" }],
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleInputChange = (e:any) => {
+    const { name, value } = e.target;
+    setHabitData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleObstacleChange = (index:any, field: any, value:any) => {
+    const newObstacles = [...habitData.obstacles];
+    //@ts-ignore
+    newObstacles[index ][field] = value;
+    setHabitData((prev) => ({ ...prev, obstacles: newObstacles }));
+  };
+
+  const handleSubmit = async (e:any) => {
     e.preventDefault();
-    // Handle habit creation logic here
-    console.log("New habit:", { name: habitName, frequency });
-    onClose();
+    try {
+      // Create a new object without the stackedHabitId if it's empty
+      const dataToSend = {...habitData};
+      if (!dataToSend.stackedHabitId) {
+        //@ts-ignore
+        delete dataToSend.stackedHabitId;
+      }
+
+      const result = await createHabit(dataToSend);
+      if (result.success) {
+        console.log("Habit created successfully:", result.habit);
+        onClose();
+      } else {
+        console.error("Failed to create habit:", result.error);
+      }
+    } catch (error) {
+      console.error("Error creating habit:", error);
+    }
   };
 
   return (
@@ -46,33 +81,81 @@ export function AddHabitModal({
       <form onSubmit={handleSubmit}>
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="habit-name">Habit Name</Label>
+            <Label htmlFor="title">Habit Title</Label>
             <Input
-              id="habit-name"
+              id="title"
+              name="title"
               placeholder="e.g., Read for 30 minutes"
-              value={habitName}
-              onChange={(e) => setHabitName(e.target.value)}
+              value={habitData.title}
+              onChange={handleInputChange}
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="frequency">Frequency</Label>
-            <Select value={frequency} onValueChange={setFrequency}>
-              <SelectTrigger id="frequency">
-                <SelectValue placeholder="Select frequency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              name="description"
+              placeholder="Describe your habit"
+              value={habitData.description}
+              onChange={handleInputChange}
+            />
           </div>
+          {/* Add more fields here for goalId, cue, craving, response, reward, etc. */}
+          <div className="grid gap-2">
+            <Label htmlFor="environment">Environment</Label>
+            <Input
+              id="environment"
+              name="environment"
+              placeholder="Where will you perform this habit?"
+              value={habitData.environment}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="time">Time</Label>
+            <Input
+              id="time"
+              name="time"
+              type="datetime-local"
+              value={habitData.time.toISOString().slice(0, 16)}
+              onChange={(e) => setHabitData((prev) => ({ ...prev, time: new Date(e.target.value) }))}
+            />
+          </div>
+          {/* Add fields for obstacles */}
+          {habitData.obstacles.map((obstacle, index) => (
+            <div key={index} className="grid gap-2">
+              <Label>Obstacle {index + 1}</Label>
+              <Input
+                placeholder="Description"
+                value={obstacle.description}
+                onChange={(e) => handleObstacleChange(index, 'description', e.target.value)}
+              />
+              <Input
+                placeholder="Solution"
+                value={obstacle.solution}
+                onChange={(e) => handleObstacleChange(index, 'solution', e.target.value)}
+              />
+            </div>
+          ))}
+          <Button type="button" onClick={() => setHabitData((prev) => ({ ...prev, obstacles: [...prev.obstacles, { description: "", solution: "" }] }))}>
+            Add Obstacle
+          </Button>
+          <div className="grid gap-2">
+          <Label htmlFor="stackedHabitId">Stacked Habit ID (optional)</Label>
+          <Input
+            id="stackedHabitId"
+            name="stackedHabitId"
+            placeholder="ID of the habit to stack on"
+            value={habitData.stackedHabitId}
+            onChange={handleInputChange}
+          />
+        </div>
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" variant={"orange"}>
+          <Button type="submit">
             <PlusIcon className="mr-2 h-4 w-4" /> Add Habit
           </Button>
         </CardFooter>
