@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { prisma } from "../../utils/prismaDB";
 import { authOptions } from "@/utils/auth";
 import { revalidatePath } from "next/cache";
+import { HabitStatus } from '@prisma/client';
 
 export const createGoal = async (data: {
   title: string;
@@ -216,16 +217,19 @@ interface CreateHabitData {
   
   
 
+
+
   interface TrackHabitData {
     habitId: string;
     date: Date | undefined;
     completed: boolean;
+    status: HabitStatus;  // Use the HabitStatus enum
     notes?: string;
   }
   
   export const trackHabit = async (data: TrackHabitData) => {
     const session = await getServerSession(authOptions);
-  
+    console.log("Tracking habit with data:", JSON.stringify(data, null, 2));
     if (!session || !session.user) {
       return { error: "Unauthorized or insufficient permissions" };
     }
@@ -234,7 +238,7 @@ interface CreateHabitData {
   
     try {
       const user = await prisma.user.findUnique({
-        where: { email: userEmail as string},
+        where: { email: userEmail as string },
       });
   
       if (!user) {
@@ -263,12 +267,14 @@ interface CreateHabitData {
         },
         update: {
           completed: data.completed,
+          status: data.status,
           notes: data.notes,
         },
         create: {
           habitId: data.habitId,
           date: data.date as Date,
           completed: data.completed,
+          status: data.status,
           notes: data.notes,
         },
       });
@@ -280,8 +286,6 @@ interface CreateHabitData {
       return { error: error.message || "Failed to track habit." };
     }
   };
-
-
 
   export async function getHabit(habitId : any ) {
     try {

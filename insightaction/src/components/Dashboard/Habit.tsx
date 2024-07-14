@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AddHabitModal } from "./Addhabit";
-import { Habit } from "@prisma/client";
+import { Habit, HabitStatus } from "@prisma/client";
 import { trackHabit, getCompletedHabits } from "@/actions/habit";
 
 interface HabitListProps {
@@ -56,6 +56,7 @@ const HabitList: React.FC<HabitListProps> = ({ habits }) => {
         habitId,
         date,
         completed: true,
+        status : HabitStatus.COMPLETED,
       });
 
       if ('error' in result) {
