@@ -176,8 +176,30 @@ interface CreateHabitData {
   };
 
   export async function fetchHabits() {
+    const session = await getServerSession(authOptions);
+  
+    if (!session || !session.user) {
+      return { error: "Unauthorized or insufficient permissions" };
+    }
+  
+    const userEmail = session.user.email;
+  
+
     try {
-      const habits = await prisma.habit.findMany()
+
+      const user = await prisma.user.findUnique({
+        where: { email: userEmail as string },
+      });
+  
+      if (!user) {
+        return { error: "User not found" };
+      }
+
+      const habits = await prisma.habit.findMany({
+        where: {
+          userId: user.id
+        }
+      })
       return habits
     } catch (error) {
       console.error('Error fetching habits:', error)
