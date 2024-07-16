@@ -3,9 +3,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, MoreVertical } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,12 +16,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CalendarIcon, MoreVertical } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { AddHabitModal } from "./Addhabit";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Habit, HabitStatus } from "@prisma/client";
-import { trackHabit, getCompletedHabits } from "@/actions/habit";
+import { trackHabit, getCompletedHabits, fetchHabits } from "@/actions/habit";
+// import { FetchHabitsReturn } from "@/app/(dashboard)/journal/habits/page";
 
 interface HabitListProps {
-  habits: Habit[] ;
+  habits: Habit[];
 }
 
 interface CompletedHabit {
@@ -36,6 +42,12 @@ const HabitList: React.FC<any> = ({ habits }) => {
   const [date, setDate] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [completedHabits, setCompletedHabits] = useState<CompletedHabit[]>([]);
+
+  const handleHabitSkip = (id: any) => {};
+  const handleHabitFail = (id: any) => {};
+  const handleHabitUncomplete = (id: any) => {};
+  const handleHabitUnskip = (id: any) => {};
+  const handleHabitUnfail = (id: any) => {};
 
   useEffect(() => {
     fetchCompletedHabits();
@@ -76,8 +88,90 @@ const HabitList: React.FC<any> = ({ habits }) => {
     );
   };
 
+  const renderHabitList = (filteredHabits: any, itemClassName = "") => (
+    <div className="space-y-0">
+      {filteredHabits.map((habit: any, index: any) => (
+        <div
+          key={habit.id}
+          className={`flex items-center justify-between p-4 ${
+            index !== filteredHabits.length - 1
+              ? "border-b border-gray-700"
+              : ""
+          } ${itemClassName}`}
+        >
+          <span>{habit.title}</span>
+          <div className="flex items-center space-x-2">
+            {habit.status === "current" && (
+              <button
+                onClick={() => handleHabitCompletion(habit.id)}
+                className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
+              >
+                <span className="mr-2">Done</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {habit.status === "current" && (
+                  <>
+                    <DropdownMenuItem onClick={() => handleHabitSkip(habit.id)}>
+                      Skip
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleHabitFail(habit.id)}>
+                      Failed
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleHabitCompletion(habit.id)}
+                    >
+                      Done
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {habit.status === "completed" && (
+                  <DropdownMenuItem
+                    onClick={() => handleHabitUncomplete(habit.id)}
+                  >
+                    Undo
+                  </DropdownMenuItem>
+                )}
+                {habit.status === "skipped" && (
+                  <DropdownMenuItem onClick={() => handleHabitUnskip(habit.id)}>
+                    Undo Skip
+                  </DropdownMenuItem>
+                )}
+                {habit.status === "failed" && (
+                  <DropdownMenuItem onClick={() => handleHabitUnfail(habit.id)}>
+                    Undo Fail
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem>Show streak</DropdownMenuItem>
+                <DropdownMenuItem>Edit</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="bg-dark min-h-screen space-y-6 p-6 text-white">
+    <div className="bg-dark min-h-screen space-y-6 p-4 text-white">
       <div className="flex items-center justify-between">
         <div className="flex space-x-4">
           <button className="rounded-full bg-gray-700 p-2">🔍</button>
@@ -117,72 +211,83 @@ const HabitList: React.FC<any> = ({ habits }) => {
           <AddHabitModal onClose={() => setIsModalOpen(false)} />
         </div>
       )}
-      <div className="space-y-0">
-        {
-         
-          habits.map((habit: any, index: any) => (
-            <div
-              key={habit.id}
-              className={`flex items-center justify-between p-4 ${
-               
-                index !== habits.length - 1 ? "border-b border-gray-700" : ""
-              }`}
-            >
-              <span
-                className={isHabitCompleted(habit.id) ? "line-through" : ""}
-              >
-                {habit.title}
-              </span>
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => handleHabitCompletion(habit.id)}
-                  className={`flex items-center rounded px-3 py-1 transition-colors duration-200 hover:bg-done ${
-                    isHabitCompleted(habit.id) ? "bg-green-700" : "bg-black"
-                  }`}
-                >
-                  <span className="mr-2">Done</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+      {/* Current Habits */}
+      <div>
+        {renderHabitList(
+          habits.filter((habit: any) => habit.status === "current"),
+        )}
+      </div>
+
+      {/* Completed Habits */}
+      {habits.filter((habit: any) => habit.status === "completed").length >
+        0 && (
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="completed-habits">
+            <AccordionTrigger>Completed Habits</AccordionTrigger>
+            <AccordionContent>
+              {habits
+                .filter((habit: any) => habit.status === "completed")
+                .map((habit: any, index: any, filteredHabits: any) => (
+                  <div
+                    key={habit.id}
+                    className={`flex items-center justify-between p-4 ${
+                      index !== filteredHabits.length - 1
+                        ? "border-b border-gray-700"
+                        : ""
+                    }`}
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Skip</DropdownMenuItem>
-                    <DropdownMenuItem>Show streak</DropdownMenuItem>
-                    <DropdownMenuItem>Failed</DropdownMenuItem>
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuItem>Done</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          ))
-        }
-      </div>
-      <div className="mt-8">
-        <h2 className="mb-4 text-xl font-bold">Completed Habits</h2>
-        <ul className="space-y-2">
-          {completedHabits.map((completedHabit) => (
-            <li key={completedHabit.habit.id} className="line-through">
-              {completedHabit.habit.title}
-            </li>
-          ))}
-        </ul>
-      </div>
+                    <span className="line-through">{habit.title}</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleHabitUncomplete(habit.id)}
+                        >
+                          Undo
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>Show streak</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ))}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
+
+      {/* Skipped Habits */}
+      {habits.filter((habit: any) => habit.status === "skipped").length > 0 && (
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="skipped-habits">
+            <AccordionTrigger>Skipped Habits</AccordionTrigger>
+            <AccordionContent>
+              {renderHabitList(
+                habits.filter((habit: any) => habit.status === "skipped"),
+                "text-gray-400",
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
+
+      {/* Failed Habits */}
+      {habits.filter((habit: any) => habit.status === "failed").length > 0 && (
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="failed-habits">
+            <AccordionTrigger>Failed Habits</AccordionTrigger>
+            <AccordionContent>
+              {renderHabitList(
+                habits.filter((habit: any) => habit.status === "failed"),
+                "text-red-500",
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
     </div>
   );
 };
