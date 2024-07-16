@@ -4,7 +4,19 @@ import { getServerSession } from "next-auth";
 import { prisma } from "../../utils/prismaDB";
 import { authOptions } from "@/utils/auth";
 import { revalidatePath } from "next/cache";
-import { HabitStatus } from '@prisma/client';
+import { HabitStatus, Habit } from '@prisma/client';
+
+
+type HabitWithStats = Habit & {
+  status: string;
+  streak: number;
+  completed: number;
+  skipped: number;
+  failed: number;
+};
+interface HabitListProps {
+  gethabit: HabitWithStats[];
+}
 
 export const createGoal = async (data: {
   title: string;
@@ -176,29 +188,29 @@ interface CreateHabitData {
   };
 
   export async function fetchHabits() {
-    const session = await getServerSession(authOptions);
+    // const session = await getServerSession(authOptions);
   
-    if (!session || !session.user) {
-      return { error: "Unauthorized or insufficient permissions" };
-    }
+    // if (!session || !session.user) {
+    //   return { error: "Unauthorized or insufficient permissions" };
+    // }
   
-    const userEmail = session.user.email;
+    // const userEmail = session.user.email;
   
 
     try {
 
-      const user = await prisma.user.findUnique({
-        where: { email: userEmail as string },
-      });
+      // const user = await prisma.user.findUnique({
+      //   where: { email: userEmail as string },
+      // });
   
-      if (!user) {
-        return { error: "User not found" };
-      }
+      // if (!user) {
+      //   return { error: "User not found" };
+      // }
 
       const habits = await prisma.habit.findMany({
-        where: {
-          userId: user.id
-        }
+        // where: {
+        //   userId: user.id
+        // }
       })
       return habits
     } catch (error) {
@@ -395,6 +407,45 @@ interface CreateHabitData {
 
 
 
+  // export const getCompletedHabits = async (date: Date) => {
+  //   const session = await getServerSession(authOptions);
+  
+  //   if (!session || !session.user) {
+  //     return { error: "Unauthorized or insufficient permissions" };
+  //   }
+  
+  //   const userEmail = session.user.email;
+  
+  //   try {
+  //     const user = await prisma.user.findUnique({
+  //       where: { email: userEmail as string },
+  //     });
+  
+  //     if (!user) {
+  //       return { error: "User not found" };
+  //     }
+  
+  //     const completedHabits = await prisma.habitTracker.findMany({
+  //       where: {
+  //         habit: { userId: user.id },
+  //         date: {
+  //           gte: new Date(date.setHours(0, 0, 0, 0)),
+  //           lt: new Date(date.setHours(23, 59, 59, 999)),
+  //         },
+  //         completed: true,
+  //       },
+  //       include: {
+  //         habit: true,
+  //       },
+  //     });
+  
+  //     return { success: true, completedHabits };
+  //   } catch (error: any) {
+  //     return { error: error.message || "Failed to fetch completed habits." };
+  //   }
+  // };
+
+
   export const getCompletedHabits = async (date: Date) => {
     const session = await getServerSession(authOptions);
   
@@ -413,22 +464,58 @@ interface CreateHabitData {
         return { error: "User not found" };
       }
   
-      const completedHabits = await prisma.habitTracker.findMany({
-        where: {
-          habit: { userId: user.id },
-          date: {
-            gte: new Date(date.setHours(0, 0, 0, 0)),
-            lt: new Date(date.setHours(23, 59, 59, 999)),
-          },
-          completed: true,
-        },
+      const habits = await prisma.habit.findMany({
+        where: { userId: user.id },
         include: {
-          habit: true,
+          trackedDays: {
+            orderBy: { date: 'desc' },
+            take: 30, // Consider last 30 days for stats
+          },
         },
       });
   
-      return { success: true, completedHabits };
+      const habitsWithStats: HabitWithStats[] = habits.map(habit => {
+        const recentTrackers = habit.trackedDays;
+        
+        let streak = 0;
+        let completed = 0;
+        let skipped = 0;
+        let failed = 0;
+  
+        for (const tracker of recentTrackers) {
+          if (tracker.completed) {
+            completed++;
+            streak++;
+          } else if (tracker.status === HabitStatus.SKIPPED) {
+            skipped++;
+            streak = 0;
+          } else if (tracker.status === HabitStatus.FAILED) {
+            failed++;
+            streak = 0;
+          } else {
+            streak = 0;
+          }
+        }
+  
+        const latestTracker = recentTrackers[0];
+        const status = latestTracker
+          ? latestTracker.completed
+            ? "completed"
+            : latestTracker.status?.toLowerCase() || "current"
+          : "current";
+  
+        return {
+          ...habit,
+          status,
+          streak,
+          completed,
+          skipped,
+          failed,
+        };
+      });
+  
+      return { success: true, gethabit: habitsWithStats };
     } catch (error: any) {
-      return { error: error.message || "Failed to fetch completed habits." };
+      return { error: error.message || "Failed to fetch habits with stats." };
     }
   };

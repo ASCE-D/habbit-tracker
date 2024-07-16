@@ -6,15 +6,9 @@ import { Sidebar } from "@/components/Dashboard/Test";
 import { fetchHabits, stackHabit } from "@/actions/habit";
 
 const page = async () => {
-  const fetchedHabits = await fetchHabits();
-  console.log("hello", fetchedHabits);
-  const habit = [{
-    name: "Read for 30 minutes",
-    streak: 5,
-    completed: 20,
-    skipped: 3,
-    failed: 2,
-  }];
+  const habits = await fetchHabits();
+  console.log("hello", habits);
+
 
   return (
     // const [selectedHabit, setSelectedHabit] = useState(null);
@@ -25,7 +19,7 @@ const page = async () => {
       </div>
       <div className="flex w-5/6">
         <div className="w-1/2 border-l border-r border-gray-700">
-          <HabitList habits={habit} />
+          <HabitList habits={habits} />
         </div>
 
         {/* Habit Details - 40% width */}

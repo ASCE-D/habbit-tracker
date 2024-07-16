@@ -29,19 +29,37 @@ import { Habit, HabitStatus } from "@prisma/client";
 import { trackHabit, getCompletedHabits, fetchHabits } from "@/actions/habit";
 // import { FetchHabitsReturn } from "@/app/(dashboard)/journal/habits/page";
 
+// interface HabitListProps {
+//   habits: Habit[];
+// }
+
 interface HabitListProps {
-  habits: Habit[];
+  initialHabits: Habit[];
 }
+
+type HabitWithStats = Habit & {
+  status: string;
+  streak: number;
+  completed: number;
+  skipped: number;
+  failed: number;
+};
 
 interface CompletedHabit {
   habit: Habit;
   date: Date;
+  
 }
 
-const HabitList: React.FC<any> = ({ habits }) => {
+// const HabitList: React.FC<HabitListProps> = ({ habits }) => {
+//   const [date, setDate] = useState<Date>(new Date());
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+//   const [completedHabits, setCompletedHabits] = useState<CompletedHabit[]>([]);
+//   const [gethabit, setGetHabit] = useState<HabitWithStats[]>([]);
+const HabitList: React.FC<HabitListProps> = ({ initialHabits }) => {
   const [date, setDate] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [completedHabits, setCompletedHabits] = useState<CompletedHabit[]>([]);
+  const [habits, setHabits] = useState<HabitWithStats[]>([]);
 
   const handleHabitSkip = (id: any) => {};
   const handleHabitFail = (id: any) => {};
@@ -55,8 +73,9 @@ const HabitList: React.FC<any> = ({ habits }) => {
 
   const fetchCompletedHabits = async () => {
     const result = await getCompletedHabits(date);
+    console.log (result)
     if ("success" in result && result.success) {
-      setCompletedHabits(result.completedHabits);
+      setHabits(result.gethabit);
     } else {
       console.error("Failed to fetch completed habits:", result.error);
     }
@@ -82,11 +101,11 @@ const HabitList: React.FC<any> = ({ habits }) => {
     }
   };
 
-  const isHabitCompleted = (habitId: string) => {
-    return completedHabits.some(
-      (completedHabit) => completedHabit.habit.id === habitId,
-    );
-  };
+  // const isHabitCompleted = (habitId: string) => {
+  //   return completedHabits.some(
+  //     (completedHabit) => completedHabit.habit.id === habitId,
+  //   );
+  // };
 
   const renderHabitList = (filteredHabits: any, itemClassName = "") => (
     <div className="space-y-0">
@@ -106,6 +125,10 @@ const HabitList: React.FC<any> = ({ habits }) => {
                 onClick={() => handleHabitCompletion(habit.id)}
                 className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
               >
+                 <button
+                onClick={() => handleHabitCompletion(habit.id)}
+                className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
+              ></button>
                 <span className="mr-2">Done</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
