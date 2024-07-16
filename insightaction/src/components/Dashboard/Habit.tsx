@@ -24,7 +24,7 @@ import { Habit, HabitStatus } from "@prisma/client";
 import { trackHabit, getCompletedHabits } from "@/actions/habit";
 
 interface HabitListProps {
-  habits: Habit[];
+  habits: Habit[] ;
 }
 
 interface CompletedHabit {
@@ -32,7 +32,7 @@ interface CompletedHabit {
   date: Date;
 }
 
-const HabitList: React.FC<HabitListProps> = ({ habits }) => {
+const HabitList: React.FC<any> = ({ habits }) => {
   const [date, setDate] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [completedHabits, setCompletedHabits] = useState<CompletedHabit[]>([]);
@@ -43,7 +43,7 @@ const HabitList: React.FC<HabitListProps> = ({ habits }) => {
 
   const fetchCompletedHabits = async () => {
     const result = await getCompletedHabits(date);
-    if ('success' in result && result.success) {
+    if ("success" in result && result.success) {
       setCompletedHabits(result.completedHabits);
     } else {
       console.error("Failed to fetch completed habits:", result.error);
@@ -56,10 +56,10 @@ const HabitList: React.FC<HabitListProps> = ({ habits }) => {
         habitId,
         date,
         completed: true,
-        status : HabitStatus.COMPLETED,
+        status: HabitStatus.COMPLETED,
       });
 
-      if ('error' in result) {
+      if ("error" in result) {
         console.error("Error tracking habit:", result.error);
       } else {
         console.log("Habit tracked successfully:", result.trackedHabit);
@@ -71,7 +71,9 @@ const HabitList: React.FC<HabitListProps> = ({ habits }) => {
   };
 
   const isHabitCompleted = (habitId: string) => {
-    return completedHabits.some((completedHabit) => completedHabit.habit.id === habitId);
+    return completedHabits.some(
+      (completedHabit) => completedHabit.habit.id === habitId,
+    );
   };
 
   return (
@@ -85,7 +87,7 @@ const HabitList: React.FC<HabitListProps> = ({ habits }) => {
                 variant={"outline"}
                 className={cn(
                   "rounded-full bg-gray-700 p-2",
-                  !date && "text-muted-foreground"
+                  !date && "text-muted-foreground",
                 )}
               >
                 <CalendarIcon className="h-4 w-4" />
@@ -104,7 +106,7 @@ const HabitList: React.FC<HabitListProps> = ({ habits }) => {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="focus-visible:ring-ring bg-primaryOrange text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50"
+          className="text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primaryOrange px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
         >
           <span className="pl-2">Set Goal</span>
           <span className="px-2">+</span>
@@ -116,57 +118,63 @@ const HabitList: React.FC<HabitListProps> = ({ habits }) => {
         </div>
       )}
       <div className="space-y-0">
-        {habits.map((habit, index) => (
-          <div
-            key={habit.id}
-            className={`flex items-center justify-between p-4 ${
-              index !== habits.length - 1 ? "border-b border-gray-700" : ""
-            }`}
-          >
-            <span className={isHabitCompleted(habit.id) ? "line-through" : ""}>
-              {habit.title}
-            </span>
-            <div className="flex items-center space-x-4">
-              <button 
-                onClick={() => handleHabitCompletion(habit.id)}
-                className={`hover:bg-done flex items-center rounded px-3 py-1 transition-colors duration-200 ${
-                  isHabitCompleted(habit.id) ? "bg-green-700" : "bg-black"
-                }`}
+        {
+         
+          habits.map((habit: any, index: any) => (
+            <div
+              key={habit.id}
+              className={`flex items-center justify-between p-4 ${
+               
+                index !== habits.length - 1 ? "border-b border-gray-700" : ""
+              }`}
+            >
+              <span
+                className={isHabitCompleted(habit.id) ? "line-through" : ""}
               >
-                <span className="mr-2">Done</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+                {habit.title}
+              </span>
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => handleHabitCompletion(habit.id)}
+                  className={`flex items-center rounded px-3 py-1 transition-colors duration-200 hover:bg-done ${
+                    isHabitCompleted(habit.id) ? "bg-green-700" : "bg-black"
+                  }`}
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Skip</DropdownMenuItem>
-                  <DropdownMenuItem>Show streak</DropdownMenuItem>
-                  <DropdownMenuItem>Failed</DropdownMenuItem>
-                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                  <DropdownMenuItem>Done</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  <span className="mr-2">Done</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Skip</DropdownMenuItem>
+                    <DropdownMenuItem>Show streak</DropdownMenuItem>
+                    <DropdownMenuItem>Failed</DropdownMenuItem>
+                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                    <DropdownMenuItem>Done</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        }
       </div>
       <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">Completed Habits</h2>
+        <h2 className="mb-4 text-xl font-bold">Completed Habits</h2>
         <ul className="space-y-2">
           {completedHabits.map((completedHabit) => (
             <li key={completedHabit.habit.id} className="line-through">

@@ -1,10 +1,12 @@
 import Link from "next/link";
 import {
   Package2,
-  LayoutDashboard,
-  List,
-  BarChart2,
+  User,
+  Target,
+  FolderClosed,
+  Plus,
   Settings,
+  LayoutList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,9 +19,9 @@ import {
 
 export function Sidebar() {
   return (
-    <div className="bg-dark hidden h-screen border-r md:block">
+    <div className="bg-dark hidden h-screen border-r border-gray-600 md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
-        <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+        <div className="flex h-14 items-center border-b border-gray-600 px-4 lg:h-[60px] lg:px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <Package2 className="h-6 w-6" />
             <span className="">My Habits</span>
@@ -29,32 +31,56 @@ export function Sidebar() {
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
             <Link
               href="#"
-              className="text-muted-foreground hover:text-primaryOrange flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+              className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
             >
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
+              <User className="h-4 w-4" />
+              Profile
             </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-primaryOrange flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
-            >
-              <List className="h-4 w-4" />
-              All Habits
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-primaryOrange flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
-            >
-              <BarChart2 className="h-4 w-4" />
-              Statistics
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-primaryOrange flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </Link>
+            <div className="mt-4">
+              <h3 className="text-muted-foreground mb-2 px-3 text-xs font-semibold">
+                GOALS
+              </h3>
+              <Link
+                href="#"
+                className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
+              >
+                <Target className="h-4 w-4" />
+                All Goals
+              </Link>
+              <Link
+                href="#"
+                className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
+              >
+                <FolderClosed className="h-4 w-4" />
+                Goal Folders
+              </Link>
+              <Link
+                href="#"
+                className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
+              >
+                <Plus className="h-4 w-4" />
+                Add a Goal
+              </Link>
+            </div>
+            <div className="mt-4">
+              <h3 className="text-muted-foreground mb-2 px-3 text-xs font-semibold">
+                PREFERENCES
+              </h3>
+              <Link
+                href="#"
+                className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
+              >
+                <Settings className="h-4 w-4" />
+                App Settings
+              </Link>
+              <Link
+                href="#"
+                className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
+              >
+                <LayoutList className="h-4 w-4" />
+                Manage Habits
+              </Link>
+            </div>
           </nav>
         </div>
         <div className="mt-auto p-4">
