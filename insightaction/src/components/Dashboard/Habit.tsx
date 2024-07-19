@@ -109,10 +109,10 @@ const HabitList: React.FC<any> = () => {
                 onClick={() => handleHabitCompletion(habit.id)}
                 className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
               >
-                 <button
+                 {/* <button
                 onClick={() => handleHabitCompletion(habit.id)}
                 className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
-              ></button>
+              ></button> */}
                 <span className="mr-2">Done</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
