@@ -26,12 +26,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Habit, HabitStatus } from "@prisma/client";
-import { trackHabit, getCompletedHabits, fetchHabits } from "@/actions/habit";
-// import { FetchHabitsReturn } from "@/app/(dashboard)/journal/habits/page";
+import { trackHabit,  fetchHabits, getHabitsForDay } from "@/actions/habit";
 
-// interface HabitListProps {
-//   habits: Habit[];
-// }
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -39,23 +35,15 @@ interface HabitListProps {
 
 type HabitWithStats = Habit & {
   status: string;
-  streak: number;
+
   completed: number;
   skipped: number;
   failed: number;
 };
 
-interface CompletedHabit {
-  habit: Habit;
-  date: Date;
-  
-}
 
-// const HabitList: React.FC<HabitListProps> = ({ habits }) => {
-//   const [date, setDate] = useState<Date>(new Date());
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   const [completedHabits, setCompletedHabits] = useState<CompletedHabit[]>([]);
-//   const [gethabit, setGetHabit] = useState<HabitWithStats[]>([]);
+
+
 const HabitList: React.FC<HabitListProps> = ({ initialHabits }) => {
   const [date, setDate] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -72,7 +60,7 @@ const HabitList: React.FC<HabitListProps> = ({ initialHabits }) => {
   }, [date]);
 
   const fetchCompletedHabits = async () => {
-    const result = await getCompletedHabits(date);
+    const result = await getHabitsForDay(date);
     console.log (result)
     if ("success" in result && result.success) {
       setHabits(result.gethabit);
@@ -101,11 +89,7 @@ const HabitList: React.FC<HabitListProps> = ({ initialHabits }) => {
     }
   };
 
-  // const isHabitCompleted = (habitId: string) => {
-  //   return completedHabits.some(
-  //     (completedHabit) => completedHabit.habit.id === habitId,
-  //   );
-  // };
+
 
   const renderHabitList = (filteredHabits: any, itemClassName = "") => (
     <div className="space-y-0">
@@ -120,7 +104,7 @@ const HabitList: React.FC<HabitListProps> = ({ initialHabits }) => {
         >
           <span>{habit.title}</span>
           <div className="flex items-center space-x-2">
-            {habit.status === "current" && (
+            {habit.status === "NOT_STARTED" && (
               <button
                 onClick={() => handleHabitCompletion(habit.id)}
                 className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
@@ -235,21 +219,22 @@ const HabitList: React.FC<HabitListProps> = ({ initialHabits }) => {
         </div>
       )}
       {/* Current Habits */}
-      <div>
-        {renderHabitList(
-          habits.filter((habit: any) => habit.status === "current"),
-        )}
-      </div>
+      {renderHabitList(
+  habits.filter((habit: any) => 
+    
+    habit.status.toLowerCase() === "not_started"
+  ),
+)}
 
       {/* Completed Habits */}
-      {habits.filter((habit: any) => habit.status === "completed").length >
+      {habits.filter((habit: any) => habit.status === "COMPLETED").length >
         0 && (
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="completed-habits">
             <AccordionTrigger>Completed Habits</AccordionTrigger>
             <AccordionContent>
               {habits
-                .filter((habit: any) => habit.status === "completed")
+                .filter((habit: any) => habit.status === "COMPLETED")
                 .map((habit: any, index: any, filteredHabits: any) => (
                   <div
                     key={habit.id}

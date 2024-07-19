@@ -7,16 +7,7 @@ import { revalidatePath } from "next/cache";
 import { HabitStatus, Habit } from '@prisma/client';
 
 
-type HabitWithStats = Habit & {
-  status: string;
-  streak: number;
-  completed: number;
-  skipped: number;
-  failed: number;
-};
-interface HabitListProps {
-  gethabit: HabitWithStats[];
-}
+
 
 export const createGoal = async (data: {
   title: string;
@@ -188,29 +179,29 @@ interface CreateHabitData {
   };
 
   export async function fetchHabits() {
-    // const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions);
   
-    // if (!session || !session.user) {
-    //   return { error: "Unauthorized or insufficient permissions" };
-    // }
+    if (!session || !session.user) {
+      return { error: "Unauthorized or insufficient permissions" };
+    }
   
-    // const userEmail = session.user.email;
+    const userEmail = session.user.email;
   
 
     try {
 
-      // const user = await prisma.user.findUnique({
-      //   where: { email: userEmail as string },
-      // });
+      const user = await prisma.user.findUnique({
+        where: { email: userEmail as string },
+      });
   
-      // if (!user) {
-      //   return { error: "User not found" };
-      // }
+      if (!user) {
+        return { error: "User not found" };
+      }
 
       const habits = await prisma.habit.findMany({
-        // where: {
-        //   userId: user.id
-        // }
+        where: {
+          userId: user.id
+        }
       })
       return habits
     } catch (error) {
@@ -444,9 +435,18 @@ interface CreateHabitData {
   //     return { error: error.message || "Failed to fetch completed habits." };
   //   }
   // };
+  type HabitWithStats = Habit & {
+    status: string;
+    
+    completed: number;
+    skipped: number;
+    failed: number;
+  };
+  interface HabitListProps {
+    gethabit: HabitWithStats[];
+  }
 
-
-  export const getCompletedHabits = async (date: Date) => {
+  export const getHabitsForDay = async (date: Date) => {
     const session = await getServerSession(authOptions);
   
     if (!session || !session.user) {
@@ -464,53 +464,33 @@ interface CreateHabitData {
         return { error: "User not found" };
       }
   
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+  
       const habits = await prisma.habit.findMany({
         where: { userId: user.id },
         include: {
           trackedDays: {
-            orderBy: { date: 'desc' },
-            take: 30, // Consider last 30 days for stats
+            where: {
+              date: {
+                gte: startOfDay,
+                lte: endOfDay,
+              },
+            },
           },
         },
       });
   
       const habitsWithStats: HabitWithStats[] = habits.map(habit => {
-        const recentTrackers = habit.trackedDays;
-        
-        let streak = 0;
-        let completed = 0;
-        let skipped = 0;
-        let failed = 0;
-  
-        for (const tracker of recentTrackers) {
-          if (tracker.completed) {
-            completed++;
-            streak++;
-          } else if (tracker.status === HabitStatus.SKIPPED) {
-            skipped++;
-            streak = 0;
-          } else if (tracker.status === HabitStatus.FAILED) {
-            failed++;
-            streak = 0;
-          } else {
-            streak = 0;
-          }
-        }
-  
-        const latestTracker = recentTrackers[0];
-        const status = latestTracker
-          ? latestTracker.completed
-            ? "completed"
-            : latestTracker.status?.toLowerCase() || "current"
-          : "current";
-  
+        const trackedDay = habit.trackedDays[0];
         return {
           ...habit,
-          status,
-          streak,
-          completed,
-          skipped,
-          failed,
+          status: trackedDay?.status || "NOT_STARTED",
+          completed: trackedDay?.completed ? 1 : 0,
+          skipped: trackedDay?.status === "SKIPPED" ? 1 : 0,
+          failed: trackedDay?.status === "FAILED" ? 1 : 0,
         };
       });
   
