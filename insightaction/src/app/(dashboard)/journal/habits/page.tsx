@@ -1,5 +1,5 @@
 import Layout from "@/components/Dashboard";
-import { HabitDetails } from "@/components/Dashboard/Details";
+import  HabitDetails  from "@/components/Dashboard/Details";
 import HabitList from "@/components/Dashboard/Habit";
 // import Sidebar from "@/components/Dashboard/Sidebar";
 import { Sidebar } from "@/components/Dashboard/Test";
@@ -19,7 +19,8 @@ const page = async () => {
       </div>
       <div className="flex w-5/6">
         <div className="w-1/2 border-l border-r border-gray-700">
-          <HabitList habits={habits} />
+        
+          <HabitList  />
         </div>
 
         {/* Habit Details - 40% width */}

@@ -28,7 +28,7 @@ const StatCard = ({ title, value, subtext, icon: Icon, color }: any) => (
   </div>
 );
 
-export function HabitDetails({ habit }: any) {
+export default function HabitDetails({ habit }: any) {
   const [date, setDate] = useState(new Date());
   return (
     <div className="bg-dark p-4 text-white">

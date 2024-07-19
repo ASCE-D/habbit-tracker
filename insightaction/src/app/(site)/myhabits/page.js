@@ -19,7 +19,7 @@ export default async function Dashboard() {
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Your Goals</h2>
         {goals.length === 0 ? (
-          <p>You haven't set any goals yet.</p>
+          <p>You havent set any goals yet.</p>
         ) : (
           <ul className="space-y-4">
         {goals.map((goal) => (
@@ -49,7 +49,7 @@ export default async function Dashboard() {
       <div>
         <h2 className="text-2xl font-semibold mb-4">All Habits</h2>
         {habits.length === 0 ? (
-          <p>You haven't created any habits yet.</p>
+          <p>You havent created any habits yet.</p>
         ) : (
           <ul className="space-y-4">
             {habits.map((habit) => (

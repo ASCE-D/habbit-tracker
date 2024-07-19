@@ -63,7 +63,7 @@ export default function HabitTracker() {
       </div>
 
       {habits.length === 0 ? (
-        <p>You haven't created any habits yet.</p>
+        <p>You havent created any habits yet.</p>
       ) : (
         <ul className="space-y-4">
           {habits.map((habit) => (

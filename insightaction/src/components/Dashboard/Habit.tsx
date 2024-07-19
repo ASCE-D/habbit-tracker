@@ -44,7 +44,7 @@ type HabitWithStats = Habit & {
 
 
 
-const HabitList: React.FC<HabitListProps> = ({ initialHabits }) => {
+const HabitList: React.FC<any> = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [habits, setHabits] = useState<HabitWithStats[]>([]);

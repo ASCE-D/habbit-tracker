@@ -22,7 +22,7 @@ const About = () => {
                   habit-building process, from identifying your habit loop to
                   overcoming obstacles.
                   <br /> <br />
-                  With our interactive tools and expert-led guidance, you'll
+                  With our interactive tools and expert-led guidance, you&apos;ll
                   learn to stack habits effectively, set clear intentions, and
                   track your progress. Our approach makes habit formation not
                   just effective, but also enjoyable and sustainable.
