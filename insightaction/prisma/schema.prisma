@@ -45,8 +45,8 @@ model User {
   emailVerified         DateTime?
   image                 String?
   password              String?
-  goals     Goal[]
-  habits    Habit[]
+  goals                 Goal[]
+  habits                Habit[]
   passwordResetToken    String?   @unique
   passwordResetTokenExp DateTime?
   accounts              Account[]
@@ -61,8 +61,6 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-
-
 model Goal {
   id          String   @id @default(uuid())
   title       String
@@ -75,28 +73,50 @@ model Goal {
 }
 
 model Habit {
-  id                  String     @id @default(uuid())
-  title               String
-  description         String?
-  userId              String
-  user                User       @relation(fields: [userId], references: [id])
-  goalId              String?
-  goal                Goal?      @relation("GoalToHabit", fields: [goalId], references: [id])
-  cue                 String?
-  craving             String?
-  response            String?
-  reward              String?
+  id                      String          @id @default(uuid())
+  title                   String
+  description             String?
+  userId                  String
+  user                    User            @relation(fields: [userId], references: [id])
+  goalId                  String?
+  goal                    Goal?           @relation("GoalToHabit", fields: [goalId], references: [id])
+  cue                     String?
+  craving                 String?
+  response                String?
+  reward                  String?
   implementationIntention String?
-  environment         String
-  time                DateTime
-  stackedHabitId      String?
-  stackedHabit        Habit?     @relation("HabitStack", fields: [stackedHabitId], references: [id])
-  stackedOnto         Habit[]    @relation("HabitStack")
-  trackedDays         HabitTracker[]
-  obstacles           Obstacle[]
-  createdAt           DateTime   @default(now())
-  updatedAt           DateTime   @updatedAt
+  environment             String
+  frequency               FrequencyType?
+  intervalDays            Int? // For custom interval frequency
+  goalCount               Int?
+  goalPeriod              GoalPeriodType?
+  timeOfDay               String? // 'any' or specific time in HH:MM format
+  startDate               DateTime?
+  endDate                 DateTime?
+  isArchived              Boolean         @default(false)
+  stackedHabitId          String?
+  time                    DateTime
+  stackedHabit            Habit?          @relation("HabitStack", fields: [stackedHabitId], references: [id])
+  stackedOnto             Habit[]         @relation("HabitStack")
+  trackedDays             HabitTracker[]
+  obstacles               Obstacle[]
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
 }
+
+enum FrequencyType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  INTERVAL
+}
+
+enum GoalPeriodType {
+  DAY
+  WEEK
+  MONTH
+}
+
 enum HabitStatus {
   CURRENT
   COMPLETED
@@ -105,15 +125,16 @@ enum HabitStatus {
 }
 
 model HabitTracker {
-  id        String      @id @default(uuid())
-  habitId   String
-  habit     Habit       @relation(fields: [habitId], references: [id])
-  date      DateTime
-  completed Boolean
-  status    HabitStatus? // Using the enum
-  notes     String?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id             String       @id @default(uuid())
+  habitId        String
+  habit          Habit        @relation(fields: [habitId], references: [id])
+  date           DateTime
+  completedCount Int          @default(0)
+  status         HabitStatus?
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  completed      Boolean
 
   @@unique([habitId, date])
 }

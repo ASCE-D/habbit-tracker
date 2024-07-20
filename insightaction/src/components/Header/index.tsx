@@ -48,7 +48,7 @@ const Header = () => {
       <header
         className={`ud-header left-0 top-0 z-40 flex w-full items-center ${
           sticky
-            ? "shadow-nav fixed z-[999] border-b border-stroke bg-white/80 backdrop-blur-[5px] dark:border-dark-3/20 dark:bg-dark/10"
+            ? "shadow-nav fixed z-[999] border-b border-stroke bg-black  backdrop-blur-[5px] dark:border-dark-3/20 dark:bg-dark/10"
             : "absolute bg-transparent"
         }`}
       >
@@ -298,14 +298,14 @@ const Header = () => {
                     {pathUrl !== "/" || sticky ? (
                       <button
                         onClick={() => signOut()}
-                        className="signUpBtn rounded-lg bg-primary bg-opacity-100 px-6 py-3 text-base font-medium text-white duration-300 ease-in-out hover:bg-opacity-20 hover:text-dark"
+                        className="signUpBtn rounded-lg bg-primaryOrange bg-opacity-100 px-6 py-3 text-base font-medium text-white duration-300 ease-in-out hover:bg-opacity-20"
                       >
                         Sign Out
                       </button>
                     ) : (
                       <button
                         onClick={() => signOut()}
-                        className="signUpBtn rounded-lg bg-white bg-opacity-20 px-6 py-3 text-base font-medium text-white duration-300 ease-in-out hover:bg-opacity-100 hover:text-dark"
+                        className="signUpBtn rounded-lg bg-primaryOrange bg-opacity-20 px-6 py-3 text-base font-medium text-white duration-300 ease-in-out hover:bg-opacity-100 "
                       >
                         Sign Out
                       </button>

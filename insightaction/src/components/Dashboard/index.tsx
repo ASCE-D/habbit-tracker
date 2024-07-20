@@ -1,32 +1,22 @@
-"use client"
+"use client";
 
-import React, { useState } from "react";
-import Sidebar from "./Sidebar";
-import HabitList from "./Habit";
-import HabitDetails from "./Details";
+import { useState } from "react";
+import HabitList from "@/components/Dashboard/Habit";
+import HabitDetails from "@/components/Dashboard/Details";
 
-
-const Layout = () => {
+const HabitDashboardClient = () => {
   const [selectedHabit, setSelectedHabit] = useState(null);
 
   return (
-    <div className="mt-24 flex h-screen bg-gray-900 text-white">
-      {/* Sidebar - 20% width */}
-      <div className=" w-1/6">
-        <Sidebar />
+    <>
+      <div className="w-1/2 border-l border-r border-gray-700">
+        <HabitList onHabitSelect={setSelectedHabit} />
       </div>
-
-      {/* Habit List - 40% width */}
-      <div className="w-3/6 border-l border-r border-gray-700">
-        <HabitList />
+      <div className="w-1/2">
+        <HabitDetails habit={selectedHabit} />
       </div>
-
-      {/* Habit Details - 40% width */}
-      <div className="w-2/6">
-        <HabitDetails  />
-      </div>
-    </div>
+    </>
   );
 };
 
-export default Layout;
+export default HabitDashboardClient;

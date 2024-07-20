@@ -3,30 +3,26 @@ import  HabitDetails  from "@/components/Dashboard/Details";
 import HabitList from "@/components/Dashboard/Habit";
 // import Sidebar from "@/components/Dashboard/Sidebar";
 import { Sidebar } from "@/components/Dashboard/Test";
-import { fetchHabits, stackHabit } from "@/actions/habit";
+import { fetchHabits, stackHabit, getHabitsForDay } from "@/actions/habit";
+import { Suspense } from "react";
+import HabitDashboardClient from "@/components/Dashboard";
+import PreLoader from "@/components/Common/PreLoader";
+// import { getHabitsForDay } from "@/actions/habit/test";
 
 const page = async () => {
-  const habits = await fetchHabits();
-  console.log("hello", habits);
+  // const habits = await getHabitsForDay(new Date());
+  // console.log("hello", habits);
 
 
   return (
-    // const [selectedHabit, setSelectedHabit] = useState(null);
     <div className="flex">
-      {/* Sidebar - 20% width */}
-      <div className=" w-1/6 ">
+      <div className="fixed left-0 top-0 h-full w-1/6 overflow-hidden">
         <Sidebar />
       </div>
-      <div className="flex w-5/6">
-        <div className="w-1/2 border-l border-r border-gray-700">
-        
-          <HabitList  />
-        </div>
-
-        {/* Habit Details - 40% width */}
-        <div className="w-1/2">
-          <HabitDetails habit />
-        </div>
+      <div className="ml-[16.6%] flex w-5/6 overflow-y-auto">
+        <Suspense fallback={<PreLoader />}>
+          <HabitDashboardClient />
+        </Suspense>
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
 "use client";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import SocialSignIn from "../SocialSignIn";
 import SwitchOption from "../SwitchOption";
@@ -12,6 +12,13 @@ import Loader from "@/components/Common/Loader";
 
 const Signin = () => {
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/journal/habits");
+    }
+  }, [status, router]);
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -38,7 +45,7 @@ const Signin = () => {
         if (callback?.ok && !callback?.error) {
           toast.success("Login successful");
           setLoading(false);
-          router.push("/");
+          router.push("/journal/habits");
         }
       })
       .catch((err) => {
@@ -49,12 +56,12 @@ const Signin = () => {
   };
 
   return (
-    <section className="bg-[#F4F7FF] py-14 dark:bg-dark lg:py-20">
+    <section className="bg-dark dark:bg-dark py-14 lg:py-20">
       <div className="container">
         <div className="-mx-4 flex flex-wrap">
           <div className="w-full px-4">
             <div
-              className="wow fadeInUp relative mx-auto max-w-[525px] overflow-hidden rounded-lg bg-white px-8 py-14 text-center dark:bg-dark-2 sm:px-12 md:px-[60px]"
+              className="wow fadeInUp dark:bg-dark-2 relative mx-auto max-w-[525px] overflow-hidden rounded-lg bg-dark-2 px-8 py-14 text-center sm:px-12 md:px-[60px]"
               data-wow-delay=".15s"
             >
               <div className="mb-10 text-center">
@@ -79,8 +86,8 @@ const Signin = () => {
               <SocialSignIn />
 
               <span className="z-1 relative my-8 block text-center">
-                <span className="-z-1 absolute left-0 top-1/2 block h-px w-full bg-stroke dark:bg-dark-3"></span>
-                <span className="text-body-secondary relative z-10 inline-block bg-white px-3 text-base dark:bg-dark-2">
+                <span className="-z-1 bg-stroke dark:bg-dark-3 absolute left-0 top-1/2 block h-px w-full"></span>
+                <span className="text-body-secondary dark:bg-dark-2 relative z-10 inline-block bg-dark-2 px-3 text-base">
                   OR
                 </span>
               </span>
@@ -99,7 +106,7 @@ const Signin = () => {
                       onChange={(e) =>
                         setLoginData({ ...loginData, email: e.target.value })
                       }
-                      className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-dark outline-none transition placeholder:text-dark-6 focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-white dark:focus:border-primary"
+                      className="border-stroke text-white placeholder:text-dark-6 focus:border-primaryOrange dark:border-dark-3 dark:focus:border-primary w-full rounded-md border bg-transparent px-5 py-3 text-base outline-none transition focus-visible:shadow-none dark:text-white"
                     />
                   </div>
                   <div className="mb-[22px]">
@@ -109,14 +116,14 @@ const Signin = () => {
                       onChange={(e) =>
                         setLoginData({ ...loginData, password: e.target.value })
                       }
-                      className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-dark outline-none transition placeholder:text-dark-6 focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-white dark:focus:border-primary"
+                      className="border-stroke text-white placeholder:text-dark-6 focus:border-primary dark:border-dark-3 dark:focus:border-primary w-full rounded-md border bg-transparent px-5 py-3 text-base outline-none transition focus-visible:shadow-none dark:text-white"
                     />
                   </div>
                   <div className="mb-9">
                     <button
                       onClick={loginUser}
                       type="submit"
-                      className="flex w-full cursor-pointer items-center justify-center rounded-md border border-primary bg-primary px-5 py-3 text-base text-white transition duration-300 ease-in-out hover:bg-primary/90"
+                      className="border-primaryOrange bg-primaryOrange hover:bg-primaryOrange/60 flex w-full cursor-pointer items-center justify-center rounded-md border px-5 py-3 text-base text-white transition duration-300 ease-in-out"
                     >
                       Sign In {loading && <Loader />}
                     </button>
@@ -128,13 +135,13 @@ const Signin = () => {
 
               <Link
                 href="/forgot-password"
-                className="mb-2 inline-block text-base text-dark hover:text-primary dark:text-white dark:hover:text-primary"
+                className="text-white hover:text-primaryOrange dark:hover:text-primaryOrange mb-2 inline-block text-base dark:text-white"
               >
                 Forget Password?
               </Link>
               <p className="text-body-secondary text-base">
                 Not a member yet?{" "}
-                <Link href="/signup" className="text-primary hover:underline">
+                <Link href="/signup" className="text-primaryOrange hover:underline">
                   Sign Up
                 </Link>
               </p>

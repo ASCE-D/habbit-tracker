@@ -29,7 +29,7 @@ const Hero = () => {
                   <li>
                     <Link
                       href="/journal/habits"
-                      className="text-dark shadow-1 hover:bg-gray-2 inline-flex items-center justify-center rounded-md bg-white/[0.12] px-4 py-[14px] text-center text-base font-medium transition duration-300 ease-in-out"
+                      className="text-dark shadow-1 hover:bg-gray-2 inline-flex items-center justify-center rounded-md bg-primaryOrange hover:bg-primaryOrange/60 px-4 py-[14px] text-center text-base font-medium transition duration-300 ease-in-out"
                     >
                       <div className="ml-2 flex items-center justify-center">
                         <div className=" font-semibold">Start Tracking Now</div>
@@ -54,7 +54,7 @@ const Hero = () => {
                       </div>
                     </Link>
                   </li>
-                  <li>
+                  {/* <li>
                     <Link
                       href="https://github.com/nextjsTemplates/play-nextjs"
                       target="_blank"
@@ -79,9 +79,9 @@ const Hero = () => {
                       </svg>
                       Star on Github
                     </Link>
-                  </li>
+                  </li> */}
                 </ul>
-
+{/* 
                 <div>
                   <p className="mb-4 text-center text-base font-medium text-white/60">
                     Play is now available for all popular frameworks
@@ -218,7 +218,7 @@ const Hero = () => {
                       </svg>
                     </a>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 

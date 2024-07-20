@@ -16,7 +16,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CalendarIcon, MoreVertical } from "lucide-react";
+import {
+  ArrowDownNarrowWide,
+  CalendarIcon,
+  MoreVertical,
+  Search,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AddHabitModal } from "./Addhabit";
 import {
@@ -26,8 +31,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Habit, HabitStatus } from "@prisma/client";
-import { trackHabit,  fetchHabits, getHabitsForDay } from "@/actions/habit";
-
+import { trackHabit, fetchHabits } from "@/actions/habit";
+import { getHabitsForDay } from "@/actions/habit/test";
+import PreLoader from "../Common/PreLoader";
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -35,19 +41,18 @@ interface HabitListProps {
 
 type HabitWithStats = Habit & {
   status: string;
-
   completed: number;
   skipped: number;
   failed: number;
+  streak: number;
+  total: number;
 };
 
-
-
-
-const HabitList: React.FC<any> = () => {
+const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const [date, setDate] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [habits, setHabits] = useState<HabitWithStats[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleHabitSkip = (id: any) => {};
   const handleHabitFail = (id: any) => {};
@@ -60,12 +65,16 @@ const HabitList: React.FC<any> = () => {
   }, [date]);
 
   const fetchCompletedHabits = async () => {
+    setIsLoading(true);
     const result = await getHabitsForDay(date);
-    console.log (result)
+    console.log(result);
     if ("success" in result && result.success) {
-      setHabits(result.gethabit);
+      //@ts-ignore
+      setHabits(result.habits);
+      setIsLoading(false);
     } else {
-      console.error("Failed to fetch completed habits:", result.error);
+      console.error("Failed to fetch completed habits:", result);
+      setIsLoading(false);
     }
   };
 
@@ -89,8 +98,6 @@ const HabitList: React.FC<any> = () => {
     }
   };
 
-
-
   const renderHabitList = (filteredHabits: any, itemClassName = "") => (
     <div className="space-y-0">
       {filteredHabits.map((habit: any, index: any) => (
@@ -102,14 +109,20 @@ const HabitList: React.FC<any> = () => {
               : ""
           } ${itemClassName}`}
         >
-          <span>{habit.title}</span>
+          <span
+            key={habit.id}
+            onClick={() => onHabitSelect(habit)}
+            className=" hover:cursor-pointer"
+          >
+            {habit.title}
+          </span>
           <div className="flex items-center space-x-2">
-            {habit.status === "NOT_STARTED" && (
+            {habit.status === HabitStatus.CURRENT && (
               <button
                 onClick={() => handleHabitCompletion(habit.id)}
                 className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
               >
-                 {/* <button
+                {/* <button
                 onClick={() => handleHabitCompletion(habit.id)}
                 className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
               ></button> */}
@@ -135,7 +148,7 @@ const HabitList: React.FC<any> = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {habit.status === "current" && (
+                {habit.status === HabitStatus.CURRENT && (
                   <>
                     <DropdownMenuItem onClick={() => handleHabitSkip(habit.id)}>
                       Skip
@@ -150,7 +163,7 @@ const HabitList: React.FC<any> = () => {
                     </DropdownMenuItem>
                   </>
                 )}
-                {habit.status === "completed" && (
+                {habit.status === HabitStatus.COMPLETED && (
                   <DropdownMenuItem
                     onClick={() => handleHabitUncomplete(habit.id)}
                   >
@@ -177,21 +190,31 @@ const HabitList: React.FC<any> = () => {
     </div>
   );
 
-  return (
+  return isLoading ? (
+    <PreLoader />
+  ) : (
     <div className="bg-dark min-h-screen space-y-6 p-4 text-white">
       <div className="flex items-center justify-between">
         <div className="flex space-x-4">
-          <button className="rounded-full bg-gray-700 p-2">🔍</button>
+          <Button
+            variant={"outline"}
+            className={cn(
+              "rounded-full bg-gray-700 p-4",
+              !date && "text-muted-foreground",
+            )}
+          >
+            Searh <Search className="ml-2 h-4 w-4 text-primaryOrange" />
+          </Button>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant={"outline"}
                 className={cn(
-                  "rounded-full bg-gray-700 p-2",
+                  "rounded-full bg-gray-700 p-4",
                   !date && "text-muted-foreground",
                 )}
               >
-                <CalendarIcon className="h-4 w-4" />
+                Today <CalendarIcon className="ml-2 h-4 w-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -203,7 +226,15 @@ const HabitList: React.FC<any> = () => {
               />
             </PopoverContent>
           </Popover>
-          <button className="rounded-full bg-gray-700 p-2">🔽</button>
+          <Button
+            variant={"outline"}
+            className={cn(
+              "rounded-full bg-gray-700 p-4",
+              !date && "text-muted-foreground",
+            )}
+          >
+            <ArrowDownNarrowWide className="h-6 w-6 bg-primaryOrange" />
+          </Button>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -220,11 +251,8 @@ const HabitList: React.FC<any> = () => {
       )}
       {/* Current Habits */}
       {renderHabitList(
-  habits.filter((habit: any) => 
-    
-    habit.status.toLowerCase() === "not_started"
-  ),
-)}
+        habits.filter((habit: any) => habit.status === HabitStatus.CURRENT),
+      )}
 
       {/* Completed Habits */}
       {habits.filter((habit: any) => habit.status === "COMPLETED").length >
@@ -244,7 +272,12 @@ const HabitList: React.FC<any> = () => {
                         : ""
                     }`}
                   >
-                    <span className="line-through">{habit.title}</span>
+                    <span
+                      className="line-through hover:cursor-pointer"
+                      onClick={() => onHabitSelect(habit)}
+                    >
+                      {habit.title}
+                    </span>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
