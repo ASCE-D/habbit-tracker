@@ -67,7 +67,8 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const fetchCompletedHabits = async () => {
     setIsLoading(true);
     const result = await getHabitsForDay(date);
-    console.log(result);
+    console.log(date)
+    console.log(date,result);
     if ("success" in result && result.success) {
       //@ts-ignore
       setHabits(result.habits);
@@ -78,13 +79,13 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     }
   };
 
-  const handleHabitCompletion = async (habitId: string) => {
+  const handleHabitCompletion = async (habitId: string, status: HabitStatus, completed: boolean ) => {
     try {
       const result = await trackHabit({
         habitId,
         date,
-        completed: true,
-        status: HabitStatus.COMPLETED,
+        completed,
+        status,
       });
 
       if ("error" in result) {
@@ -119,7 +120,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
           <div className="flex items-center space-x-2">
             {habit.status === HabitStatus.CURRENT && (
               <button
-                onClick={() => handleHabitCompletion(habit.id)}
+                onClick={() => handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)}
                 className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
               >
                 {/* <button
@@ -150,14 +151,14 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
               <DropdownMenuContent align="end">
                 {habit.status === HabitStatus.CURRENT && (
                   <>
-                    <DropdownMenuItem onClick={() => handleHabitSkip(habit.id)}>
+                    <DropdownMenuItem onClick={() => handleHabitCompletion(habit.id, HabitStatus.SKIPPED, false)}>
                       Skip
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleHabitFail(habit.id)}>
+                    <DropdownMenuItem onClick={() => handleHabitCompletion(habit.id, HabitStatus.FAILED, false)}>
                       Failed
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => handleHabitCompletion(habit.id)}
+                      onClick={() => handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)}
                     >
                       Done
                     </DropdownMenuItem>
@@ -165,18 +166,18 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
                 )}
                 {habit.status === HabitStatus.COMPLETED && (
                   <DropdownMenuItem
-                    onClick={() => handleHabitUncomplete(habit.id)}
+                    onClick={() => handleHabitCompletion(habit.id, HabitStatus.CURRENT, false)}
                   >
                     Undo
                   </DropdownMenuItem>
                 )}
-                {habit.status === "skipped" && (
-                  <DropdownMenuItem onClick={() => handleHabitUnskip(habit.id)}>
+                {habit.status === "SKIPPED" && (
+                  <DropdownMenuItem onClick={() => handleHabitCompletion(habit.id, HabitStatus.CURRENT, false)}>
                     Undo Skip
                   </DropdownMenuItem>
                 )}
-                {habit.status === "failed" && (
-                  <DropdownMenuItem onClick={() => handleHabitUnfail(habit.id)}>
+                {habit.status === "FAILED" && (
+                  <DropdownMenuItem onClick={() => handleHabitCompletion(habit.id, HabitStatus.CURRENT, false)}>
                     Undo Fail
                   </DropdownMenuItem>
                 )}
@@ -286,7 +287,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => handleHabitUncomplete(habit.id)}
+                          onClick={() => handleHabitCompletion(habit.id, HabitStatus.CURRENT, false)}
                         >
                           Undo
                         </DropdownMenuItem>
@@ -301,13 +302,13 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
       )}
 
       {/* Skipped Habits */}
-      {habits.filter((habit: any) => habit.status === "skipped").length > 0 && (
+      {habits.filter((habit: any) => habit.status === "SKIPPED").length > 0 && (
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="skipped-habits">
             <AccordionTrigger>Skipped Habits</AccordionTrigger>
             <AccordionContent>
               {renderHabitList(
-                habits.filter((habit: any) => habit.status === "skipped"),
+                habits.filter((habit: any) => habit.status === "SKIPPED"),
                 "text-gray-400",
               )}
             </AccordionContent>
@@ -316,13 +317,13 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
       )}
 
       {/* Failed Habits */}
-      {habits.filter((habit: any) => habit.status === "failed").length > 0 && (
+      {habits.filter((habit: any) => habit.status === "FAILED").length > 0 && (
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="failed-habits">
             <AccordionTrigger>Failed Habits</AccordionTrigger>
             <AccordionContent>
               {renderHabitList(
-                habits.filter((habit: any) => habit.status === "failed"),
+                habits.filter((habit: any) => habit.status === "FAILED"),
                 "text-red-500",
               )}
             </AccordionContent>

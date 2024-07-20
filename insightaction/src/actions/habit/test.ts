@@ -43,7 +43,7 @@ export const getHabitsForDay = async (
     }
 
     const currentDate = new Date(date);
-
+console.log(currentDate,"faf",date)
     const habits = await prisma.habit.findMany({
       where: {
         userId: user.id,
