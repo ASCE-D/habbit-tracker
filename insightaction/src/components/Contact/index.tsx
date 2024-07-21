@@ -33,7 +33,7 @@ const Contact = () => {
                       Our Location
                     </h3>
                     <p className="text-dark-6  dark:text-dark-6 text-base">
-                      401 Broadway, 24th Floor, Orchard Cloud View, London
+                      Programmers Cafe
                     </p>
                   </div>
                 </div>
@@ -53,10 +53,10 @@ const Contact = () => {
                       How Can We Help?
                     </h3>
                     <p className="text-dark-6  dark:text-dark-6 text-base">
-                      info@yourdomain.com
+                      deepeshgenani@gmail.com
                     </p>
                     <p className="text-dark-6  dark:text-dark-6 mt-1 text-base">
-                      contact@yourdomain.com
+                      ashishpandey46209@gmail.com
                     </p>
                   </div>
                 </div>

@@ -112,10 +112,11 @@ export default function HabitDetails({ habit }: any) {
               chance of achieving your goals and sticking to this habit.
             </p>
             <div className="flex items-center space-x-2">
-              <span className="text-blue-400">https://share.habitify.m...</span>
+              {// <span className="text-blue-400">https://share.habitify.m...</span>
               <Button variant="ghost" size="icon">
                 <Share2 size={18} />
               </Button>
+}
             </div>
           </div>
         </div>

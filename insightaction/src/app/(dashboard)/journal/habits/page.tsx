@@ -1,18 +1,21 @@
+import { getServerSession } from "next-auth/next";
+import { redirect } from "next/navigation";
 import Layout from "@/components/Dashboard";
-import  HabitDetails  from "@/components/Dashboard/Details";
+import HabitDetails from "@/components/Dashboard/Details";
 import HabitList from "@/components/Dashboard/Habit";
-// import Sidebar from "@/components/Dashboard/Sidebar";
 import { Sidebar } from "@/components/Dashboard/Test";
 import { fetchHabits, stackHabit, getHabitsForDay } from "@/actions/habit";
 import { Suspense } from "react";
 import HabitDashboardClient from "@/components/Dashboard";
 import PreLoader from "@/components/Common/PreLoader";
-// import { getHabitsForDay } from "@/actions/habit/test";
+import { authOptions } from "@/utils/auth";
 
-const page = async () => {
-  // const habits = await getHabitsForDay(new Date());
-  // console.log("hello", habits);
+const Page = async () => {
+  const session = await getServerSession(authOptions);
 
+  if (!session) {
+    redirect("/signin");
+  }
 
   return (
     <div className="flex">
@@ -28,4 +31,4 @@ const page = async () => {
   );
 };
 
-export default page;
+export default Page;

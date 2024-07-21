@@ -42,10 +42,7 @@ const PricingBox = ({ product }: { product: Price }) => {
               currency: "USD",
             })}
           </span>
-          <span className="text-dark-6 dark:text-dark-6 text-base font-normal">
-            {" "}
-            Per Month
-          </span>
+
         </h2>
 
         <div className="mb-[50px]">

@@ -2,42 +2,40 @@ import { Price } from "@/types/price";
 
 export const pricingData: Price[] = [
   {
-    id: "price_1NQk5TLtGdPVhGLecVfQ7mn0",
-    unit_amount: 100 * 100,
-    nickname: "Basic",
+    id: "price_free",
+    unit_amount: 0.00,
+    nickname: "Free",
     offers: [
-      "1 User",
-      "All UI components",
-      "Lifetime access",
-      "Free updates",
-      "Use on 1 (one) project",
-      "3 Months support",
+      "Limited time offer",
+      "5 habits per account",
+      "2 goals",
+      "Basic features",
     ],
   },
   {
-    id: "price_1NQk55LtGdPVhGLefU8AHqHr",
-    unit_amount: 200 * 100,
-    nickname: "Premium",
+    id: "price_yearly",
+    unit_amount: 10.00 * 100, // $10 in cents
+    nickname: "Yearly",
     offers: [
-      "5 Users",
-      "All UI components",
-      "Lifetime access",
-      "Free updates",
-      "Use on 1 (one) project",
-      "3 Months support",
+      "Unlimited habits",
+      "Unlimited goals",
+      "Unlimited support",
+      "Advanced features",
     ],
   },
   {
-    id: "price_1NQk4eLtGdPVhGLeZsZDsCNz",
-    unit_amount: 300 * 100,
-    nickname: "Business",
+    id: "price_lifetime",
+    unit_amount: 100.00 * 100, // Example price, adjust as needed
+    nickname: "Lifetime",
     offers: [
-      "10 Users",
-      "All UI components",
       "Lifetime access",
-      "Free updates",
-      "Use on 1 (one) project",
-      "3 Months support",
+      "Unlimited habits",
+      "Unlimited goals",
+      "All premium features",
     ],
   },
 ];
+
+
+
+

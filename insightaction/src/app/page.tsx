@@ -4,7 +4,7 @@ import CallToAction from "@/components/CallToAction";
 // import Clients from "@/components/Clients";
 import ScrollUp from "@/components/Common/ScrollUp";
 import Contact from "@/components/Contact";
-import Faq from "@/components/Faq";
+//import Faq from "@/components/Faq";
 import Features from "@/components/Features";
 import Hero from "@/components/Hero";
 import Pricing from "@/components/Pricing";
@@ -31,7 +31,7 @@ export default function Home() {
       <CallToAction />
       <Pricing />
       {/* <Testimonials /> */}
-      <Faq />
+      {/*<Faq />*/}
       <Team />
       {/* <HomeBlogSection posts={posts} /> */}
       <Contact />

@@ -229,7 +229,7 @@ const Hero = () => {
               >
                 <div className="mt-16">
                   <Image
-                    src="/images/hero/hero-image.jpg"
+                    src="/images/hero/hero.png"
                     alt="hero"
                     className="mx-auto max-w-full rounded-t-xl rounded-tr-xl"
                     width={845}
