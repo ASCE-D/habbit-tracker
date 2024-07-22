@@ -34,6 +34,7 @@ import { Habit, HabitStatus } from "@prisma/client";
 import { trackHabit, fetchHabits } from "@/actions/habit";
 import { getHabitsForDay } from "@/actions/habit/test";
 import PreLoader from "../Common/PreLoader";
+import { EditHabitModal } from "./edithabit";
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -53,6 +54,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [habits, setHabits] = useState<HabitWithStats[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
 
   const handleHabitSkip = (id: any) => {};
   const handleHabitFail = (id: any) => {};
@@ -63,6 +65,10 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   useEffect(() => {
     fetchCompletedHabits();
   }, [date]);
+
+  const handleEditHabit = (habit: Habit) => {
+    setEditingHabit(habit);
+  };
 
   const fetchCompletedHabits = async () => {
     setIsLoading(true);
@@ -182,7 +188,9 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem>Show streak</DropdownMenuItem>
-                <DropdownMenuItem>Edit</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleEditHabit(habit)}>
+                          Edit
+                        </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -250,6 +258,15 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
           <AddHabitModal onClose={() => setIsModalOpen(false)} />
         </div>
       )}
+
+{editingHabit && (
+        <EditHabitModal
+          habit={editingHabit}
+          onClose={() => setEditingHabit(null)}
+     
+        />
+      )}
+
       {/* Current Habits */}
       {renderHabitList(
         habits.filter((habit: any) => habit.status === HabitStatus.CURRENT),

@@ -499,3 +499,64 @@ interface CreateHabitData {
       return { error: error.message || "Failed to fetch habits with stats." };
     }
   };
+
+
+  export const editHabit = async (data: any) => {
+    const session = await getServerSession(authOptions);
+  
+    if (!session || !session.user) {
+      return { error: "Unauthorized or insufficient permissions" };
+    }
+  
+    const userEmail = session.user.email;
+  
+    try {
+      // Find the user by email
+      const user = await prisma.user.findUnique({
+        where: { email: userEmail as string },
+      });
+  
+      if (!user) {
+        return { error: "User not found" };
+      }
+  
+      // Check if the habit exists and belongs to the user
+      const existingHabit = await prisma.habit.findFirst({
+        where: {
+          id: data.id,
+          userId: user.id,
+        },
+        include: { obstacles: true },
+      });
+  
+      if (!existingHabit) {
+        return { error: "Habit not found or doesn't belong to the user" };
+      }
+  
+      // Update the habit
+      const updatedHabit = await prisma.habit.update({
+        where: { id: data.id },
+        data: {
+          title: data.title,
+          description: data.description,
+          
+          environment: data.environment,
+          time: data.time,
+          
+          },
+        },
+     
+      );
+  
+      // Revalidate the path if provided, otherwise revalidate the home page
+      if (data.currentPath) {
+        revalidatePath(data.currentPath);
+      } else {
+        revalidatePath('/');
+      }
+  
+      return { success: true, habit: updatedHabit };
+    } catch (error: any) {
+      return { error: error.message || "Failed to update habit." };
+    }
+  };
