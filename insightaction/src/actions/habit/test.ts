@@ -25,7 +25,7 @@ interface HabitWithStats extends Habit {
 }
 
 export const getHabitsForDay = async (
-  date: Date,
+  date: string,
 ): Promise<{ error: string } | { success: true; habits: HabitWithStats[] }> => {
   const session = await getServerSession(authOptions);
 

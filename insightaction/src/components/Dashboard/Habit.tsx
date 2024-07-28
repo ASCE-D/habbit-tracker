@@ -72,9 +72,11 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
 
   const fetchCompletedHabits = async () => {
     setIsLoading(true);
-    const result = await getHabitsForDay(date);
+
+const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const result = await getHabitsForDay(localDateString);
     console.log(date)
-    console.log(date,result);
+    console.log(localDateString, result);
     if ("success" in result && result.success) {
       //@ts-ignore
       setHabits(result.habits);
@@ -223,7 +225,8 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
                   !date && "text-muted-foreground",
                 )}
               >
-                Today <CalendarIcon className="ml-2 h-4 w-4" />
+                {date.toLocaleDateString()}{" "}
+                <CalendarIcon className="ml-2 h-4 w-4" />{" "}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -259,11 +262,10 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
         </div>
       )}
 
-{editingHabit && (
+      {editingHabit && (
         <EditHabitModal
           habit={editingHabit}
           onClose={() => setEditingHabit(null)}
-     
         />
       )}
 
@@ -304,7 +306,13 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => handleHabitCompletion(habit.id, HabitStatus.CURRENT, false)}
+                          onClick={() =>
+                            handleHabitCompletion(
+                              habit.id,
+                              HabitStatus.CURRENT,
+                              false,
+                            )
+                          }
                         >
                           Undo
                         </DropdownMenuItem>
