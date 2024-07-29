@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Flame,
   Check,
@@ -17,6 +17,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
+import { getHabitPerformedDates } from "@/actions/habit";
+
+
+
+
 
 const StatCard = ({ title, value, subtext, icon: Icon, color }: any) => (
   <div className="bg-dark rounded-lg border border-gray-600 p-4">
@@ -31,6 +36,21 @@ const StatCard = ({ title, value, subtext, icon: Icon, color }: any) => (
 
 export default function HabitDetails({ habit }: any) {
   const [date, setDate] = useState(new Date());
+
+  const [performedDates, setPerformedDates] = useState<Date[]>([]);
+useEffect(() => {
+  if (habit?.id) {
+    getHabitPerformedDates(habit.id)
+      .then((dates) => {
+        //@ts-ignore
+        setPerformedDates(dates.map((d: string) => new Date(d)));
+      })
+      .catch((error) => {
+        console.error("Error fetching performed dates:", error);
+      });
+  }
+}, [habit]);
+
   return (
     <div className="bg-dark p-4 text-white">
       <div className="mb-4 flex items-center justify-between">
@@ -99,11 +119,21 @@ export default function HabitDetails({ habit }: any) {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-lg border border-gray-600">
-            <Calendar
+            {/* <Calendar
               mode="single"
               selected={date}
               onSelect={(newDate) => newDate && setDate(newDate)}
-            />
+            /> */}
+
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={(newDate) => newDate && setDate(newDate)}
+            modifiers={{ performed: performedDates }}
+            modifiersStyles={{
+              performed: { backgroundColor: 'rgba(34, 197, 94, 0.2)' },
+            }}
+          />
           </div>
           <div className="rounded-lg border border-gray-600 p-4">
             <h3 className="mb-2 text-lg font-bold">Share your Progress</h3>

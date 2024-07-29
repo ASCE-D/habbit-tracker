@@ -88,10 +88,11 @@ const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).pad
   };
 
   const handleHabitCompletion = async (habitId: string, status: HabitStatus, completed: boolean ) => {
+    const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
     try {
       const result = await trackHabit({
         habitId,
-        date,
+        localDateString,
         completed,
         status,
       });

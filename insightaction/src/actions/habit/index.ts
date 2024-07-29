@@ -246,7 +246,7 @@ interface CreateHabitData {
 
   interface TrackHabitData {
     habitId: string;
-    date: Date | undefined;
+    localDateString: string;
     completed: boolean;
     status: HabitStatus;  // Use the HabitStatus enum
     notes?: string;
@@ -260,7 +260,7 @@ interface CreateHabitData {
     }
   
     const userEmail = session.user.email;
-  
+    const currentDate = new Date(data.localDateString);
     try {
       const user = await prisma.user.findUnique({
         where: { email: userEmail as string },
@@ -287,7 +287,7 @@ interface CreateHabitData {
         where: {
           habitId_date: {
             habitId: data.habitId,
-            date: data.date as Date,
+            date: currentDate,
           },
         },
         update: {
@@ -297,7 +297,7 @@ interface CreateHabitData {
         },
         create: {
           habitId: data.habitId,
-          date: data.date as Date,
+          date: currentDate ,
           completed: data.completed,
           status: data.status,
           notes: data.notes,
@@ -560,3 +560,23 @@ interface CreateHabitData {
       return { error: error.message || "Failed to update habit." };
     }
   };
+
+
+  export async function getHabitPerformedDates(habitId: string) {
+    try {
+      const habitTrackers = await prisma.habitTracker.findMany({
+        where: {
+          habitId: habitId,
+          completed: true,
+        },
+        select: {
+          date: true,
+        },
+      });
+  
+      return habitTrackers.map(tracker => tracker.date);
+    } catch (error) {
+      console.error('Error fetching habit performed dates:', error);
+      throw new Error('Failed to fetch habit performed dates');
+    }
+  }
