@@ -291,7 +291,7 @@ export const getGoals = async () => {
         },
         create: {
           habitId: data.habitId,
-          date: data.date as Date,
+          date: currentDate,
           completed: data.completed,
           status: data.status,
           notes: data.notes,
@@ -554,3 +554,23 @@ export const getHabitsForDay = async (date: Date) => {
       return { error: error.message || "Failed to update habit." };
     }
   };
+
+
+  export async function getHabitPerformedDates(habitId: string) {
+    try {
+      const habitTrackers = await prisma.habitTracker.findMany({
+        where: {
+          habitId: habitId,
+          completed: true,
+        },
+        select: {
+          date: true,
+        },
+      });
+
+      return habitTrackers.map(tracker => tracker.date);
+    } catch (error) {
+      console.error('Error fetching habit performed dates:', error);
+      throw new Error('Failed to fetch habit performed dates');
+    }
+  }
