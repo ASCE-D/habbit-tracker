@@ -308,7 +308,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
           onClick={() => setIsModalOpen(true)}
           className="text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primaryOrange px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
         >
-          <span className="pl-2">Set Goal</span>
+          <span className="pl-2">Set Habit</span>
           <span className="px-2">+</span>
         </button>
       </div>

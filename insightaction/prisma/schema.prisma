@@ -47,6 +47,7 @@ model User {
   password              String?
   goals                 Goal[]
   habits                Habit[]
+   reminders             Reminder[]  
   passwordResetToken    String?   @unique
   passwordResetTokenExp DateTime?
   accounts              Account[]
@@ -100,6 +101,7 @@ model Habit {
   stackedOnto             Habit[]         @relation("HabitStack")
   trackedDays             HabitTracker[]
   obstacles               Obstacle[]
+  reminders               Reminder[]      // New field
   createdAt               DateTime        @default(now())
   updatedAt               DateTime        @updatedAt
 }
@@ -147,4 +149,21 @@ model Obstacle {
   habit       Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+
+model Reminder {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id])
+  time      DateTime
+  message   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, habitId])
+  @@index([time, isActive])
 }
