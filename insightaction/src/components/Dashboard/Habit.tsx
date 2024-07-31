@@ -73,9 +73,9 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const fetchCompletedHabits = async () => {
     setIsLoading(true);
 
-const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     const result = await getHabitsForDay(localDateString);
-    console.log(date)
+    console.log(date);
     console.log(localDateString, result);
     if ("success" in result && result.success) {
       //@ts-ignore
@@ -129,7 +129,9 @@ const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).pad
           <div className="flex items-center space-x-2">
             {habit.status === HabitStatus.CURRENT && (
               <button
-                onClick={() => handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)}
+                onClick={() =>
+                  handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)
+                }
                 className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
               >
                 {/* <button
@@ -160,14 +162,36 @@ const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).pad
               <DropdownMenuContent align="end">
                 {habit.status === HabitStatus.CURRENT && (
                   <>
-                    <DropdownMenuItem onClick={() => handleHabitCompletion(habit.id, HabitStatus.SKIPPED, false)}>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleHabitCompletion(
+                          habit.id,
+                          HabitStatus.SKIPPED,
+                          false,
+                        )
+                      }
+                    >
                       Skip
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleHabitCompletion(habit.id, HabitStatus.FAILED, false)}>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleHabitCompletion(
+                          habit.id,
+                          HabitStatus.FAILED,
+                          false,
+                        )
+                      }
+                    >
                       Failed
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)}
+                      onClick={() =>
+                        handleHabitCompletion(
+                          habit.id,
+                          HabitStatus.COMPLETED,
+                          true,
+                        )
+                      }
                     >
                       Done
                     </DropdownMenuItem>
@@ -175,25 +199,47 @@ const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).pad
                 )}
                 {habit.status === HabitStatus.COMPLETED && (
                   <DropdownMenuItem
-                    onClick={() => handleHabitCompletion(habit.id, HabitStatus.CURRENT, false)}
+                    onClick={() =>
+                      handleHabitCompletion(
+                        habit.id,
+                        HabitStatus.CURRENT,
+                        false,
+                      )
+                    }
                   >
                     Undo
                   </DropdownMenuItem>
                 )}
                 {habit.status === "SKIPPED" && (
-                  <DropdownMenuItem onClick={() => handleHabitCompletion(habit.id, HabitStatus.CURRENT, false)}>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      handleHabitCompletion(
+                        habit.id,
+                        HabitStatus.CURRENT,
+                        false,
+                      )
+                    }
+                  >
                     Undo Skip
                   </DropdownMenuItem>
                 )}
                 {habit.status === "FAILED" && (
-                  <DropdownMenuItem onClick={() => handleHabitCompletion(habit.id, HabitStatus.CURRENT, false)}>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      handleHabitCompletion(
+                        habit.id,
+                        HabitStatus.CURRENT,
+                        false,
+                      )
+                    }
+                  >
                     Undo Fail
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem>Show streak</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleEditHabit(habit)}>
-                          Edit
-                        </DropdownMenuItem>
+                  Edit
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -201,6 +247,15 @@ const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).pad
       ))}
     </div>
   );
+
+  const isToday = (someDate: Date) => {
+    const today = new Date();
+    return (
+      someDate.getDate() === today.getDate() &&
+      someDate.getMonth() === today.getMonth() &&
+      someDate.getFullYear() === today.getFullYear()
+    );
+  };
 
   return isLoading ? (
     <PreLoader />
@@ -226,7 +281,7 @@ const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).pad
                   !date && "text-muted-foreground",
                 )}
               >
-                {date.toLocaleDateString()}{" "}
+                {isToday(date) ? "Today" : date.toLocaleDateString()}{" "}
                 <CalendarIcon className="ml-2 h-4 w-4" />{" "}
               </Button>
             </PopoverTrigger>
@@ -259,7 +314,12 @@ const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).pad
       </div>
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <AddHabitModal onClose={() => setIsModalOpen(false)} />
+          <AddHabitModal
+            onClose={() => {
+              setIsModalOpen(false);
+              fetchCompletedHabits();
+            }}
+          />
         </div>
       )}
 

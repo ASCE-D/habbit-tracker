@@ -66,7 +66,7 @@ model Goal {
   title       String
   description String?
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   habits      Habit[]  @relation("GoalToHabit")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -77,9 +77,9 @@ model Habit {
   title                   String
   description             String?
   userId                  String
-  user                    User            @relation(fields: [userId], references: [id])
+  user                    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   goalId                  String?
-  goal                    Goal?           @relation("GoalToHabit", fields: [goalId], references: [id])
+  goal                    Goal?           @relation("GoalToHabit", fields: [goalId], references: [id], onDelete: SetNull)
   cue                     String?
   craving                 String?
   response                String?
@@ -96,7 +96,7 @@ model Habit {
   isArchived              Boolean         @default(false)
   stackedHabitId          String?
   time                    DateTime
-  stackedHabit            Habit?          @relation("HabitStack", fields: [stackedHabitId], references: [id])
+  stackedHabit            Habit?          @relation("HabitStack", fields: [stackedHabitId], references: [id], onDelete: SetNull)
   stackedOnto             Habit[]         @relation("HabitStack")
   trackedDays             HabitTracker[]
   obstacles               Obstacle[]
@@ -127,7 +127,7 @@ enum HabitStatus {
 model HabitTracker {
   id             String       @id @default(uuid())
   habitId        String
-  habit          Habit        @relation(fields: [habitId], references: [id])
+  habit          Habit        @relation(fields: [habitId], references: [id], onDelete: Cascade)
   date           DateTime
   completedCount Int          @default(0)
   status         HabitStatus?
@@ -144,7 +144,7 @@ model Obstacle {
   description String
   solution    String
   habitId     String
-  habit       Habit    @relation(fields: [habitId], references: [id])
+  habit       Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
