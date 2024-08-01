@@ -2,10 +2,10 @@
 
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../api/auth/[...nextauth]/route';
-import ReminderForm from './ReminderForm';
-import CurrentReminders from './CurrentReminders';
 
+import ReminderForm from '../../../components/reminder/reminderform'
+import CurrentReminders from '../../../components/reminder/currentreminder'
+import { authOptions } from '@/utils/auth';
 const prisma = new PrismaClient();
 
 export default async function SetRemindersPage() {
@@ -32,12 +32,14 @@ export default async function SetRemindersPage() {
             <div key={habit.id} className="mb-4 p-4 border rounded">
               <h3 className="text-lg font-medium mb-2">{habit.title}</h3>
               <ReminderForm userId={userId} habitId={habit.id} />
+              
             </div>
           ))}
         </div>
         <div>
           <h2 className="text-xl font-semibold mb-2">Current Reminders</h2>
           <CurrentReminders userId={userId} />
+      
         </div>
       </div>
     </div>

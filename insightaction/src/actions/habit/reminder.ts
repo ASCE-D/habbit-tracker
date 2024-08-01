@@ -1,8 +1,8 @@
 // app/actions/reminderActions.ts
-
+'use server'
 import { PrismaClient } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-import { sendNotification } from '../utils/notificationService';
+// import { sendNotification } from '../utils/notificationService';
 
 //Implement the sendNotification function in app/utils/notificationService.ts. This function should integrate with your chosen notification service (e.g., Firebase Cloud Messaging, email service, or SMS gateway).
 
@@ -48,11 +48,11 @@ export async function sendCurrentReminders() {
     });
 
     for (const reminder of dueReminders) {
-      await sendNotification({
-        userId: reminder.userId,
-        title: `Reminder: ${reminder.habit.title}`,
-        body: reminder.message || `Time to update your habit: ${reminder.habit.title}`,
-      });
+      // await sendNotification({
+      //   userId: reminder.userId,
+      //   title: `Reminder: ${reminder.habit.title}`,
+      //   body: reminder.message || `Time to update your habit: ${reminder.habit.title}`,
+      // });
 
       // Optionally, mark the reminder as inactive or delete it
       await prisma.reminder.update({
