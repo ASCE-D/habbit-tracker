@@ -12,6 +12,8 @@ import Team from "@/components/Team";
 // import Testimonials from "@/components/Testimonials";
 import { getAllPosts } from "@/utils/markdown";
 import { Metadata } from "next";
+import { getMessaging, onMessage } from "firebase/messaging";
+
 
 export const metadata: Metadata = {
   title: "Insightaction -  Build Lasting Habits with Atomic Precision.",
@@ -21,7 +23,12 @@ export const metadata: Metadata = {
 
 export default function Home() {
   const posts = getAllPosts(["title", "date", "excerpt", "coverImage", "slug"]);
-
+  const messaging = getMessaging();
+  onMessage(messaging, (payload) => {
+    console.log('Message received. ', payload);
+    // ...
+  });
+  
   return (
     <main>
       <ScrollUp />
