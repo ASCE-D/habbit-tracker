@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import HabitList from "@/components/Dashboard/Habit";
 import HabitDetails from "@/components/Dashboard/Details";
+import dynamic from "next/dynamic";
+
+const HabitList = dynamic(() => import("@/components/Dashboard/Habit"), {
+  ssr: false,
+});
 
 const HabitDashboardClient = () => {
   const [selectedHabit, setSelectedHabit] = useState(null);

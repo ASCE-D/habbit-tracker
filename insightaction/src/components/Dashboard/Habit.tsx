@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,6 +19,7 @@ import {
 import {
   ArrowDownNarrowWide,
   CalendarIcon,
+  GripVertical,
   MoreVertical,
   Search,
 } from "lucide-react";
@@ -35,6 +36,20 @@ import { trackHabit, fetchHabits } from "@/actions/habit";
 import { getHabitsForDay } from "@/actions/habit/test";
 import PreLoader from "../Common/PreLoader";
 import { EditHabitModal } from "./edithabit";
+import dynamic from "next/dynamic";
+
+const DragDropContext = dynamic(
+  () => import("react-beautiful-dnd").then((mod) => mod.DragDropContext),
+  { ssr: false },
+);
+const Droppable = dynamic(
+  () => import("react-beautiful-dnd").then((mod) => mod.Droppable),
+  { ssr: false },
+);
+const Draggable = dynamic(
+  () => import("react-beautiful-dnd").then((mod) => mod.Draggable),
+  { ssr: false },
+);
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -47,7 +62,13 @@ type HabitWithStats = Habit & {
   failed: number;
   streak: number;
   total: number;
+  remainingCount: number;
 };
+
+interface HabitDayResult {
+  success: boolean;
+  habits: HabitWithStats[];
+}
 
 const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const [date, setDate] = useState<Date>(new Date());
@@ -55,16 +76,53 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const [habits, setHabits] = useState<HabitWithStats[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
+  const [tempCount, setTempCount] = useState(0);
+  const [currentHabits, setCurrentHabits] = useState<HabitWithStats[]>([]);
+  const [isClient, setIsClient] = useState(false);
 
-  const handleHabitSkip = (id: any) => {};
-  const handleHabitFail = (id: any) => {};
-  const handleHabitUncomplete = (id: any) => {};
-  const handleHabitUnskip = (id: any) => {};
-  const handleHabitUnfail = (id: any) => {};
+  const handleCountStats = (goalCount: number, remainingCount: number) => {
+    const displayCount = goalCount - remainingCount;
+    setTempCount(displayCount);
+  };
+
+  const handleOpenChange = useCallback((habit: HabitWithStats) => {
+    return (open: boolean) => {
+      if (open) {
+        // Perform actions when the popover opens
+        handleCountStats(
+          habit.goalCount as number,
+          habit.remainingCount as number,
+        );
+        console.log("Popover opened");
+      }
+    };
+  }, []);
+
+  const incrementCount = (goalCount: number) => {
+    if (tempCount < goalCount) {
+      setTempCount((prev) => prev + 1);
+    }
+  };
+
+  const decrementCount = (completedCount: number) => {
+    if (tempCount > completedCount) {
+      setTempCount((prev) => prev - 1);
+    }
+  };
+
+  useEffect(() => {
+    setIsClient(true);
+  }, [date]);
 
   useEffect(() => {
     fetchCompletedHabits();
   }, [date]);
+
+  useEffect(() => {
+    setCurrentHabits(
+      habits.filter((habit) => habit.status === HabitStatus.CURRENT),
+    );
+  }, [habits]);
 
   const handleEditHabit = (habit: Habit) => {
     setEditingHabit(habit);
@@ -78,8 +136,13 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     console.log(date);
     console.log(localDateString, result);
     if ("success" in result && result.success) {
-      //@ts-ignore
-      setHabits(result.habits);
+      const typedResult = result as HabitDayResult;
+      setHabits(typedResult.habits);
+      // setCurrentHabits(
+      //   typedResult.habits.filter(
+      //     (habit) => habit.status === HabitStatus.CURRENT,
+      //   ),
+      // );
       setIsLoading(false);
     } else {
       console.error("Failed to fetch completed habits:", result);
@@ -87,9 +150,17 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     }
   };
 
-  const handleHabitCompletion = async (habitId: string, status: HabitStatus, completed: boolean ) => {
-    const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+  const handleHabitCompletion = async (
+    habitId: string,
+    status: HabitStatus,
+    completed: boolean,
+    completedCount?: number,
+    partial = false,
+  ) => {
+    const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     try {
+      console.log(habitId, status, completedCount, partial);
+
       const result = await trackHabit({
         habitId,
         localDateString,
@@ -120,9 +191,8 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
           } ${itemClassName}`}
         >
           <span
-            key={habit.id}
             onClick={() => onHabitSelect(habit)}
-            className=" hover:cursor-pointer"
+            className="hover:cursor-pointer"
           >
             {habit.title}
           </span>
@@ -134,10 +204,6 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
                 }
                 className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
               >
-                {/* <button
-                onClick={() => handleHabitCompletion(habit.id)}
-                className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
-              ></button> */}
                 <span className="mr-2">Done</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -257,6 +323,77 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     );
   };
 
+  const onDragEnd = useCallback(
+    (result: any) => {
+      if (!result.destination) return;
+
+      const items = Array.from(currentHabits);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+
+      setCurrentHabits(items);
+      // Here you would typically update the order in your backend
+      // updateHabitOrder(items.map(habit => habit.id));
+    },
+    [currentHabits],
+  );
+
+  const renderCurrentHabits = () => {
+    if (!isClient) return null;
+    return (
+      <DragDropContext onDragEnd={onDragEnd} key={date.toISOString()}>
+        <Droppable droppableId="habits">
+          {(provided, snapshot) => (
+            <div
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+              className={cn(
+                "space-y-2 transition-colors duration-200",
+                snapshot.isDraggingOver && "rounded-md bg-background p-2",
+              )}
+            >
+              {currentHabits.map((habit, index) => (
+                <Draggable
+                  key={`${habit.id}-${date.toISOString()}`}
+                  draggableId={`${habit.id}-${date.toISOString()}`}
+                  index={index}
+                >
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      className={cn(
+                        "flex items-center justify-between rounded-md border-b border-gray-700 p-4 transition-all duration-200",
+                        snapshot.isDragging && "bg-background shadow-lg",
+                      )}
+                    >
+                      {/* Habit content */}
+                      <div className="flex items-center space-x-3">
+                        <div {...provided.dragHandleProps}>
+                          <GripVertical className="text-gray-400" />
+                        </div>
+                        <span
+                          onClick={() => onHabitSelect(habit)}
+                          className="hover:cursor-pointer"
+                        >
+                          {habit.title}
+                        </span>
+                      </div>
+                      {/* Habit actions */}
+                      {/* ... (rest of the habit actions remain the same) */}
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    );
+  };
+
   return isLoading ? (
     <PreLoader />
   ) : (
@@ -331,9 +468,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
       )}
 
       {/* Current Habits */}
-      {renderHabitList(
-        habits.filter((habit: any) => habit.status === HabitStatus.CURRENT),
-      )}
+      {renderCurrentHabits()}
 
       {/* Completed Habits */}
       {habits.filter((habit: any) => habit.status === "COMPLETED").length >

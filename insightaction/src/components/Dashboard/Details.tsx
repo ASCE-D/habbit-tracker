@@ -18,10 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { getHabitPerformedDates } from "@/actions/habit";
-
-
-
-
+import { redirect, useRouter } from "next/navigation";
 
 const StatCard = ({ title, value, subtext, icon: Icon, color }: any) => (
   <div className="bg-dark rounded-lg border border-gray-600 p-4">
@@ -36,20 +33,30 @@ const StatCard = ({ title, value, subtext, icon: Icon, color }: any) => (
 
 export default function HabitDetails({ habit }: any) {
   const [date, setDate] = useState(new Date());
-
   const [performedDates, setPerformedDates] = useState<Date[]>([]);
-useEffect(() => {
-  if (habit?.id) {
-    getHabitPerformedDates(habit.id)
-      .then((dates) => {
-        //@ts-ignore
-        setPerformedDates(dates.map((d: string) => new Date(d)));
-      })
-      .catch((error) => {
-        console.error("Error fetching performed dates:", error);
-      });
-  }
-}, [habit]);
+
+  const router = useRouter();
+
+  const handleShare = () => {
+    if (habit?.id) {
+      router.push(`/share/${habit.id}`);
+    }
+  };
+
+  useEffect(() => {
+    if (habit?.id) {
+      getHabitPerformedDates(habit.id)
+        .then((dates) => {
+          //@ts-ignore
+          setPerformedDates(dates.map((d: string) => new Date(d)));
+        })
+        .catch((error) => {
+          console.error("Error fetching performed dates:", error);
+        });
+    }
+  }, [habit]);
+
+  // console.log(habit);
 
   return (
     <div className="bg-dark p-4 text-white">
@@ -68,7 +75,7 @@ useEffect(() => {
           <Button variant="ghost" size="icon">
             <Edit size={18} />
           </Button>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={handleShare}>
             <Share2 size={18} />
           </Button>
           <Button variant="ghost" size="icon">
@@ -125,15 +132,15 @@ useEffect(() => {
               onSelect={(newDate) => newDate && setDate(newDate)}
             /> */}
 
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={(newDate) => newDate && setDate(newDate)}
-            modifiers={{ performed: performedDates }}
-            modifiersStyles={{
-              performed: { backgroundColor: 'rgba(34, 197, 94, 0.2)' },
-            }}
-          />
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={(newDate) => newDate && setDate(newDate)}
+              modifiers={{ performed: performedDates }}
+              modifiersStyles={{
+                performed: { backgroundColor: "rgba(34, 197, 94, 0.2)" },
+              }}
+            />
           </div>
           <div className="rounded-lg border border-gray-600 p-4">
             <h3 className="mb-2 text-lg font-bold">Share your Progress</h3>
@@ -142,11 +149,12 @@ useEffect(() => {
               chance of achieving your goals and sticking to this habit.
             </p>
             <div className="flex items-center space-x-2">
-              {// <span className="text-blue-400">https://share.habitify.m...</span>
-              <Button variant="ghost" size="icon">
-                <Share2 size={18} />
-              </Button>
-}
+              {
+                // <span className="text-blue-400">https://share.habitify.m...</span>
+                <Button variant="ghost" size="icon">
+                  <Share2 size={18} />
+                </Button>
+              }
             </div>
           </div>
         </div>

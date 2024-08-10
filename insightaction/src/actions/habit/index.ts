@@ -134,7 +134,7 @@ export const createHabit = async (data: CreateHabitData) => {
     if (data.currentPath) {
       revalidatePath(data.currentPath);
     } else {
-      console.log("Revalidating ")
+      console.log("Revalidating ");
       revalidatePath("/journal/habits");
     }
 
@@ -237,74 +237,74 @@ export const getGoals = async () => {
   }
 };
 
-  interface TrackHabitData {
-    habitId: string;
-    localDateString: string;
-    completed: boolean;
-    status: HabitStatus; // Use the HabitStatus enum
-    notes?: string;
+interface TrackHabitData {
+  habitId: string;
+  localDateString: string;
+  completed: boolean;
+  status: HabitStatus; // Use the HabitStatus enum
+  notes?: string;
+}
+
+export const trackHabit = async (data: TrackHabitData) => {
+  const session = await getServerSession(authOptions);
+  console.log("Tracking habit with data:", JSON.stringify(data, null, 2));
+  if (!session || !session.user) {
+    return { error: "Unauthorized or insufficient permissions" };
   }
-  
-  export const trackHabit = async (data: TrackHabitData) => {
-    const session = await getServerSession(authOptions);
-    console.log("Tracking habit with data:", JSON.stringify(data, null, 2));
-    if (!session || !session.user) {
-      return { error: "Unauthorized or insufficient permissions" };
+
+  const userEmail = session.user.email;
+  const currentDate = new Date(data.localDateString);
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail as string },
+    });
+
+    if (!user) {
+      return { error: "User not found" };
     }
-  
-    const userEmail = session.user.email;
-    const currentDate = new Date(data.localDateString);
-  
-    try {
-      const user = await prisma.user.findUnique({
-        where: { email: userEmail as string },
-      });
-  
-      if (!user) {
-        return { error: "User not found" };
-      }
-  
-      // Check if the habit belongs to the user
-      const habit = await prisma.habit.findFirst({
-        where: {
-          id: data.habitId,
-          userId: user.id,
-        },
-      });
-  
-      if (!habit) {
-        return { error: "Habit not found or doesn't belong to the user" };
-      }
-  
-      // Create or update the habit tracker entry
-      const trackedHabit = await prisma.habitTracker.upsert({
-        where: {
-          habitId_date: {
-            habitId: data.habitId,
-            date: currentDate,
-          },
-        },
-        update: {
-          completed: data.completed,
-          status: data.status,
-          notes: data.notes,
-        },
-        create: {
+
+    // Check if the habit belongs to the user
+    const habit = await prisma.habit.findFirst({
+      where: {
+        id: data.habitId,
+        userId: user.id,
+      },
+    });
+
+    if (!habit) {
+      return { error: "Habit not found or doesn't belong to the user" };
+    }
+
+    // Create or update the habit tracker entry
+    const trackedHabit = await prisma.habitTracker.upsert({
+      where: {
+        habitId_date: {
           habitId: data.habitId,
           date: currentDate,
-          completed: data.completed,
-          status: data.status,
-          notes: data.notes,
         },
-      });
-  
-      revalidatePath('/habit-tracker');
-  
-      return { success: true, trackedHabit };
-    } catch (error: any) {
-      return { error: error.message || "Failed to track habit." };
-    }
-  };
+      },
+      update: {
+        completed: data.completed,
+        status: data.status,
+        notes: data.notes,
+      },
+      create: {
+        habitId: data.habitId,
+        date: currentDate,
+        completed: data.completed,
+        status: data.status,
+        notes: data.notes,
+      },
+    });
+
+    revalidatePath("/habit-tracker");
+
+    return { success: true, trackedHabit };
+  } catch (error: any) {
+    return { error: error.message || "Failed to track habit." };
+  }
+};
 
 export async function getHabit(habitId: any) {
   try {
@@ -495,82 +495,78 @@ export const getHabitsForDay = async (date: Date) => {
   }
 };
 
-  export const editHabit = async (data: any) => {
-    const session = await getServerSession(authOptions);
-  
-    if (!session || !session.user) {
-      return { error: "Unauthorized or insufficient permissions" };
-    }
-  
-    const userEmail = session.user.email;
-  
-    try {
-      // Find the user by email
-      const user = await prisma.user.findUnique({
-        where: { email: userEmail as string },
-      });
-  
-      if (!user) {
-        return { error: "User not found" };
-      }
-  
-      // Check if the habit exists and belongs to the user
-      const existingHabit = await prisma.habit.findFirst({
-        where: {
-          id: data.id,
-          userId: user.id,
-        },
-        include: { obstacles: true },
-      });
-  
-      if (!existingHabit) {
-        return { error: "Habit not found or doesn't belong to the user" };
-      }
-  
-      // Update the habit
-      const updatedHabit = await prisma.habit.update({
-        where: { id: data.id },
-        data: {
-          title: data.title,
-          description: data.description,
-          
-          environment: data.environment,
-          time: data.time,
-          
-          },
-        },
-     
-      );
-  
-      // Revalidate the path if provided, otherwise revalidate the home page
-      if (data.currentPath) {
-        revalidatePath(data.currentPath);
-      } else {
-        revalidatePath('/');
-      }
-  
-      return { success: true, habit: updatedHabit };
-    } catch (error: any) {
-      return { error: error.message || "Failed to update habit." };
-    }
-  };
+export const editHabit = async (data: any) => {
+  const session = await getServerSession(authOptions);
 
-
-  export async function getHabitPerformedDates(habitId: string) {
-    try {
-      const habitTrackers = await prisma.habitTracker.findMany({
-        where: {
-          habitId: habitId,
-          completed: true,
-        },
-        select: {
-          date: true,
-        },
-      });
-
-      return habitTrackers.map(tracker => tracker.date);
-    } catch (error) {
-      console.error('Error fetching habit performed dates:', error);
-      throw new Error('Failed to fetch habit performed dates');
-    }
+  if (!session || !session.user) {
+    return { error: "Unauthorized or insufficient permissions" };
   }
+
+  const userEmail = session.user.email;
+
+  try {
+    // Find the user by email
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail as string },
+    });
+
+    if (!user) {
+      return { error: "User not found" };
+    }
+
+    // Check if the habit exists and belongs to the user
+    const existingHabit = await prisma.habit.findFirst({
+      where: {
+        id: data.id,
+        userId: user.id,
+      },
+      include: { obstacles: true },
+    });
+
+    if (!existingHabit) {
+      return { error: "Habit not found or doesn't belong to the user" };
+    }
+
+    // Update the habit
+    const updatedHabit = await prisma.habit.update({
+      where: { id: data.id },
+      data: {
+        title: data.title,
+        description: data.description,
+
+        environment: data.environment,
+        time: data.time,
+      },
+    });
+
+    // Revalidate the path if provided, otherwise revalidate the home page
+    if (data.currentPath) {
+      revalidatePath(data.currentPath);
+    } else {
+      revalidatePath("/");
+    }
+
+    return { success: true, habit: updatedHabit };
+  } catch (error: any) {
+    return { error: error.message || "Failed to update habit." };
+  }
+};
+
+export async function getHabitPerformedDates(habitId: string) {
+  try {
+    const habitTrackers = await prisma.habitTracker.findMany({
+      where: {
+        habitId: habitId,
+        completed: true,
+      },
+      select: {
+        date: true,
+      },
+    });
+
+    return habitTrackers.map((tracker) => tracker.date);
+  } catch (error) {
+    console.error("Error fetching habit performed dates:", error);
+    throw new Error("Failed to fetch habit performed dates");
+  }
+}
