@@ -1,56 +1,61 @@
 'use client'
 
-import { useState } from 'react';
-import { saveToken, scheduleNotification } from '../../../actions/habit/notification';
-import { getServerSession } from 'next-auth';
+import { useEffect, useState } from "react";
+import { getToken, onMessage } from "firebase/messaging";
+import { doc, setDoc } from "firebase/firestore";
+import { db, getMessagingInstance } from "../../../../firebase";
 
+export default function App() {
+    const [messaging, setMessaging] = useState(null);
 
-export default async function NotificationPreferences() {
-  const session = await getServerSession(authOptions);
+    useEffect(() => {
+        const messagingInstance = getMessagingInstance();
+        setMessaging(messagingInstance);
+    }, []);
 
-  if (!session || !session.user) {
-    return <div>Please sign in to set reminders.</div>;
-  }
-
-  const userId = session.user.id;
-  const [time, setTime] = useState('20:00');
-
-  const handleSavePreferences = async (e) => {
-    e.preventDefault();
-    await scheduleNotification(userId, time);
-    alert('Notification preferences saved!');
-  };
-
-  const requestNotificationPermission = async () => {
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      // Here you would typically get the FCM token and save it
-      // For this example, we'll use a dummy token
-      const dummyToken = 'DUMMY_FCM_TOKEN';
-      await saveToken(dummyToken, userId);
-      alert('Notification permission granted and token saved!');
-    } else {
-      alert('Notification permission denied');
+    async function saveTokenToFirestore(token) {
+        try {
+            await setDoc(doc(db, "users", "userId"), {
+                token: token
+            }, { merge: true });
+            console.log("Token saved to Firestore");
+        } catch (error) {
+            console.error("Error saving token to Firestore:", error);
+        }
     }
-  };
+    
+    async function requestPermission() {
+        if (!messaging) return;
 
-  return (
-    <div>
-      <h2>Notification Preferences</h2>
-      <button onClick={requestNotificationPermission}>
-        Enable Notifications
-      </button>
-      <form onSubmit={handleSavePreferences}>
-        <label>
-          Reminder Time:
-          <input
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
-        </label>
-        <button type="submit">Save Preferences</button>
-      </form>
-    </div>
-  );
+        onMessage(messaging, (payload) => {
+            console.log('Message received. ', payload);
+        });
+
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === "granted") {
+                const token = await getToken(messaging, {
+                    vapidKey: "BBX_f9fjH0X0V73vFk27HnG9G1AKZu7FF0c1oAP_AWLddR51an76OaJ7E3vkbFLbYztTuG-RupO__C1HKXvizA4",
+                });
+                console.log("Token Gen", token);
+                await saveTokenToFirestore(token);
+            } else if (permission === "denied") {
+                console.log("Notification permission denied");
+            }
+        } catch (error) {
+            console.error("An error occurred while requesting permission", error);
+        }
+    }
+
+    useEffect(() => {
+        if (messaging) {
+            requestPermission();
+        }
+    }, [messaging]);
+
+    return (
+        <div className="App">
+            {/* Your component JSX */}
+        </div>
+    );
 }
