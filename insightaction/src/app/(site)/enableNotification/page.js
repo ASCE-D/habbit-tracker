@@ -1,12 +1,31 @@
 'use client'
 
 import { useEffect } from "react";
-import {messaging} from "../../../../firebase";
+
 import { getToken } from "firebase/messaging";
 import { getMessaging, onMessage } from "firebase/messaging";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { db } from "../../../../firebase";
+import sendReminderNotification from '@/actions/habit'
 export default function App() {
     const messaging = getMessaging();
-
+    onMessage(messaging, (payload) => {
+      console.log('Message received. ', payload);
+      // ...
+    });
+    
+    async function saveTokenToFirestore(token) {
+      try {
+        // Assuming you want to save the token with a unique user ID
+        // You might want to replace 'userId' with the actual user's ID
+        await setDoc(doc(db, "users", "userId"), {
+          token: token
+        }, { merge: true });
+        console.log("Token saved to Firestore");
+      } catch (error) {
+        console.error("Error saving token to Firestore:", error);
+      }
+    }
     
   async function requestPermission() {
     onMessage(messaging, (payload) => {
@@ -23,6 +42,9 @@ export default function App() {
       });
       console.log("Token Gen", token);
       // Send this token  to server ( db)
+       // Save token to Firestore
+       await saveTokenToFirestore(token);
+      await sendReminderNotification()
     } else if (permission === "denied") {
       alert("You denied for the notification");
     }

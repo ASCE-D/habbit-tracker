@@ -5,6 +5,7 @@ import { prisma } from "../../utils/prismaDB";
 import { authOptions } from "@/utils/auth";
 import { revalidatePath } from "next/cache";
 import { HabitStatus, Habit, FrequencyType } from "@prisma/client";
+import { sendNotification } from '../../lib/firebase-admin';
 
 export const createGoal = async (data: {
   title: string;
@@ -574,3 +575,15 @@ export const getHabitsForDay = async (date: Date) => {
       throw new Error('Failed to fetch habit performed dates');
     }
   }
+
+  export async function sendReminderNotification() {
+    // TODO: Fetch user's FCM token from your database
+    const userToken = 'FETCH_USER_TOKEN_HERE';
+    const result = await sendNotification(
+      userToken,
+      'Habit Tracker Reminder',
+      'Don\'t forget to update your habits today!'
+    );
+    return result;
+  }
+  
