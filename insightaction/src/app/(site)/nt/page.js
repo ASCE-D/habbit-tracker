@@ -4,18 +4,30 @@ import { useEffect, useState } from "react";
 import { getToken, onMessage } from "firebase/messaging";
 import { doc, setDoc } from "firebase/firestore";
 import { db, getMessagingInstance } from "../../../../firebase";
+import { useSession } from "next-auth/react"
 
-export default function App() {
+export default  function App() {
+  
     const [messaging, setMessaging] = useState(null);
+    const { data: session, status } = useSession()
 
+ 
     useEffect(() => {
+        if(!session){
+            return
+           }
+            
+        
         const messagingInstance = getMessagingInstance();
         setMessaging(messagingInstance);
-    }, []);
+    }, [session]);
 
     async function saveTokenToFirestore(token) {
+   
+        const userEmail = session.user?.email
+    
         try {
-            await setDoc(doc(db, "users", "userId"), {
+            await setDoc(doc(db, "users", userEmail), {
                 token: token
             }, { merge: true });
             console.log("Token saved to Firestore");

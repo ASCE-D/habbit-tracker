@@ -48,11 +48,11 @@ export function Sidebar() {
                 All Goals
               </Link>
               <Link
-                href="#"
+                href="/nt"
                 className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
               >
                 <FolderClosed className="h-4 w-4" />
-                Goal Folders
+                Enable Notification
               </Link>
               <Link
                 href="#"
