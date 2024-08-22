@@ -85,18 +85,18 @@ const Signin = () => {
 
               <SocialSignIn />
 
-              <span className="z-1 relative my-8 block text-center">
+              {/* <span className="z-1 relative my-8 block text-center">
                 <span className="-z-1 bg-stroke dark:bg-dark-3 absolute left-0 top-1/2 block h-px w-full"></span>
                 <span className="text-body-secondary dark:bg-dark-2 relative z-10 inline-block bg-dark-2 px-3 text-base">
                   OR
                 </span>
-              </span>
+              </span> */}
 
-              <SwitchOption
+              {/* <SwitchOption
                 isPassword={isPassword}
                 setIsPassword={setIsPassword}
-              />
-
+              /> */}
+{/* 
               {isPassword ? (
                 <form onSubmit={(e) => e.preventDefault()}>
                   <div className="mb-[22px]">
@@ -131,8 +131,8 @@ const Signin = () => {
                 </form>
               ) : (
                 <MagicLink />
-              )}
-
+              )} */}
+{/* 
               <Link
                 href="/forgot-password"
                 className="text-white hover:text-primaryOrange dark:hover:text-primaryOrange mb-2 inline-block text-base dark:text-white"
@@ -144,9 +144,9 @@ const Signin = () => {
                 <Link href="/signup" className="text-primaryOrange hover:underline">
                   Sign Up
                 </Link>
-              </p>
+              </p> */}
 
-              <div>
+              <div className=" mt-36">
                 <span className="absolute right-1 top-1">
                   <svg
                     width="40"
