@@ -20,7 +20,7 @@ export default function Page() {
       />
 
       {/* Pass the selected date to SimpleHabitList */}
-      <SimpleHabitList date={date} />
+      <SimpleHabitList date={date} onClose={()=>{}}/>
     </div>
   );
 }
