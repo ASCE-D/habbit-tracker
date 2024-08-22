@@ -570,3 +570,52 @@ export async function getHabitPerformedDates(habitId: string) {
     throw new Error("Failed to fetch habit performed dates");
   }
 }
+
+export const userDetails = async () => {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      throw new Error("Unauthorized or insufficient permissions");
+    }
+
+    const userEmail = session.user.email;
+
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail as string },
+    });
+
+    return {
+      success: true,
+      user: { name: user?.name, email: user?.email, image: user?.image },
+    };
+  } catch (error: any) {
+    return { error: error.message || "Failed to update habit." };
+  }
+};
+
+export const updateProfile = async (data: any) => {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      throw new Error("Unauthorized or insufficient permissions");
+    }
+
+    const userEmail = session.user.email;
+    console.log(data)
+
+    const updatedUser = await prisma.user.update({
+      where: { email: userEmail as string },
+      data: {
+        name: data.name,
+        email: data.email,
+        image: data.image,
+      },
+    });
+
+    return { success: true, updatedUser };
+  } catch (error: any) {
+    return { error: error.message || "Failed to update user profile." };
+  }
+};

@@ -18,11 +18,11 @@ const Page = async () => {
   }
 
   return (
-    <div className="flex">
-      <div className="fixed left-0 top-0 h-full w-1/6 overflow-hidden">
+    <div className="flex h-screen">
+      <div className="fixed left-0 top-0 h-full w-1/6">
         <Sidebar />
       </div>
-      <div className="ml-[16.6%] flex w-5/6 overflow-y-auto">
+      <div className="ml-[16.6%] flex-1 overflow-hidden">
         <Suspense fallback={<PreLoader />}>
           <HabitDashboardClient />
         </Suspense>

@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -37,19 +37,7 @@ import { getHabitsForDay } from "@/actions/habit/test";
 import PreLoader from "../Common/PreLoader";
 import { EditHabitModal } from "./edithabit";
 import dynamic from "next/dynamic";
-
-const DragDropContext = dynamic(
-  () => import("react-beautiful-dnd").then((mod) => mod.DragDropContext),
-  { ssr: false },
-);
-const Droppable = dynamic(
-  () => import("react-beautiful-dnd").then((mod) => mod.Droppable),
-  { ssr: false },
-);
-const Draggable = dynamic(
-  () => import("react-beautiful-dnd").then((mod) => mod.Draggable),
-  { ssr: false },
-);
+import SimpleHabitList from "./DragTest";
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -77,8 +65,19 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [tempCount, setTempCount] = useState(0);
-  const [currentHabits, setCurrentHabits] = useState<HabitWithStats[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const [sortingEnabled, setSortingEnabled] = useState(false);
+  const [isStackModalOpen, setIsStackModalOpen] = useState(false);
+
+  let preferenceOrder: HabitWithStats[] = [];
+  const preferenceOrderString = localStorage.getItem("habitsOrder");
+  if (preferenceOrderString !== null) {
+    preferenceOrder = JSON.parse(preferenceOrderString);
+  }
+
+  // useEffect(() => {
+  //   setHabits(preferenceOrder);
+  // });
 
   const handleCountStats = (goalCount: number, remainingCount: number) => {
     const displayCount = goalCount - remainingCount;
@@ -118,16 +117,9 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     fetchCompletedHabits();
   }, [date]);
 
-  useEffect(() => {
-    setCurrentHabits(
-      habits.filter((habit) => habit.status === HabitStatus.CURRENT),
-    );
-  }, [habits]);
-
   const handleEditHabit = (habit: Habit) => {
     setEditingHabit(habit);
   };
-
   const fetchCompletedHabits = async () => {
     setIsLoading(true);
 
@@ -135,19 +127,37 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     const result = await getHabitsForDay(localDateString);
     console.log(date);
     console.log(localDateString, result);
+
     if ("success" in result && result.success) {
       const typedResult = result as HabitDayResult;
-      setHabits(typedResult.habits);
-      // setCurrentHabits(
-      //   typedResult.habits.filter(
-      //     (habit) => habit.status === HabitStatus.CURRENT,
-      //   ),
-      // );
+
+      // Get the order from localStorage
+      const orderIds = getOrderFromLocalStorage();
+
+      // Sort the habits based on the order
+      const sortedHabits = typedResult.habits.sort((a, b) => {
+        const indexA = orderIds.indexOf(a.id);
+        const indexB = orderIds.indexOf(b.id);
+
+        // If an id is not in the order array, put it at the end
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+
+        return indexA - indexB;
+      });
+
+      setHabits(sortedHabits);
       setIsLoading(false);
     } else {
       console.error("Failed to fetch completed habits:", result);
       setIsLoading(false);
     }
+  };
+
+  // Helper function to get the order from localStorage
+  const getOrderFromLocalStorage = () => {
+    const orderString = localStorage.getItem("habitsOrder");
+    return orderString ? JSON.parse(orderString) : [];
   };
 
   const handleHabitCompletion = async (
@@ -179,140 +189,151 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     }
   };
 
-  const renderHabitList = (filteredHabits: any, itemClassName = "") => (
-    <div className="space-y-0">
-      {filteredHabits.map((habit: any, index: any) => (
-        <div
-          key={habit.id}
-          className={`flex items-center justify-between p-4 ${
-            index !== filteredHabits.length - 1
-              ? "border-b border-gray-700"
-              : ""
-          } ${itemClassName}`}
-        >
-          <span
-            onClick={() => onHabitSelect(habit)}
-            className="hover:cursor-pointer"
+  const renderHabitList = (filteredHabits: any, itemClassName = "") => {
+    const sortedHabits = filteredHabits.sort((a: any, b: any) => {
+      return preferenceOrder.indexOf(a.id) - preferenceOrder.indexOf(b.id);
+    });
+
+    return (
+      <div className="space-y-0">
+        {sortedHabits.map((habit: any, index: any) => (
+          <div
+            key={habit.id}
+            className={`flex items-center justify-between p-4 ${
+              index !== filteredHabits.length - 1
+                ? "border-b border-gray-700"
+                : ""
+            } ${itemClassName}`}
           >
-            {habit.title}
-          </span>
-          <div className="flex items-center space-x-2">
-            {habit.status === HabitStatus.CURRENT && (
-              <button
-                onClick={() =>
-                  handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)
-                }
-                className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
+            <div className="flex flex-col">
+              <span
+                onClick={() => onHabitSelect(habit)}
+                className="hover:cursor-pointer"
               >
-                <span className="mr-2">Done</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+                {habit.title}
+              </span>
+              <span className="m-1 text-sm text-gray-500">
+                {habit.environment}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              {habit.status === HabitStatus.CURRENT && (
+                <button
+                  onClick={() =>
+                    handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)
+                  }
+                  className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {habit.status === HabitStatus.CURRENT && (
-                  <>
+                  <span className="mr-2">Done</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {habit.status === HabitStatus.CURRENT && (
+                    <>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleHabitCompletion(
+                            habit.id,
+                            HabitStatus.SKIPPED,
+                            false,
+                          )
+                        }
+                      >
+                        Skip
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleHabitCompletion(
+                            habit.id,
+                            HabitStatus.FAILED,
+                            false,
+                          )
+                        }
+                      >
+                        Failed
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleHabitCompletion(
+                            habit.id,
+                            HabitStatus.COMPLETED,
+                            true,
+                          )
+                        }
+                      >
+                        Done
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {habit.status === HabitStatus.COMPLETED && (
                     <DropdownMenuItem
                       onClick={() =>
                         handleHabitCompletion(
                           habit.id,
-                          HabitStatus.SKIPPED,
+                          HabitStatus.CURRENT,
                           false,
                         )
                       }
                     >
-                      Skip
+                      Undo
                     </DropdownMenuItem>
+                  )}
+                  {habit.status === "SKIPPED" && (
                     <DropdownMenuItem
                       onClick={() =>
                         handleHabitCompletion(
                           habit.id,
-                          HabitStatus.FAILED,
+                          HabitStatus.CURRENT,
                           false,
                         )
                       }
                     >
-                      Failed
+                      Undo Skip
                     </DropdownMenuItem>
+                  )}
+                  {habit.status === "FAILED" && (
                     <DropdownMenuItem
                       onClick={() =>
                         handleHabitCompletion(
                           habit.id,
-                          HabitStatus.COMPLETED,
-                          true,
+                          HabitStatus.CURRENT,
+                          false,
                         )
                       }
                     >
-                      Done
+                      Undo Fail
                     </DropdownMenuItem>
-                  </>
-                )}
-                {habit.status === HabitStatus.COMPLETED && (
-                  <DropdownMenuItem
-                    onClick={() =>
-                      handleHabitCompletion(
-                        habit.id,
-                        HabitStatus.CURRENT,
-                        false,
-                      )
-                    }
-                  >
-                    Undo
+                  )}
+                  <DropdownMenuItem>Show streak</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleEditHabit(habit)}>
+                    Edit
                   </DropdownMenuItem>
-                )}
-                {habit.status === "SKIPPED" && (
-                  <DropdownMenuItem
-                    onClick={() =>
-                      handleHabitCompletion(
-                        habit.id,
-                        HabitStatus.CURRENT,
-                        false,
-                      )
-                    }
-                  >
-                    Undo Skip
-                  </DropdownMenuItem>
-                )}
-                {habit.status === "FAILED" && (
-                  <DropdownMenuItem
-                    onClick={() =>
-                      handleHabitCompletion(
-                        habit.id,
-                        HabitStatus.CURRENT,
-                        false,
-                      )
-                    }
-                  >
-                    Undo Fail
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem>Show streak</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleEditHabit(habit)}>
-                  Edit
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
-  );
+        ))}
+      </div>
+    );
+  };
 
   const isToday = (someDate: Date) => {
     const today = new Date();
@@ -323,92 +344,12 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     );
   };
 
-  const onDragEnd = useCallback(
-    (result: any) => {
-      if (!result.destination) return;
-
-      const items = Array.from(currentHabits);
-      const [reorderedItem] = items.splice(result.source.index, 1);
-      items.splice(result.destination.index, 0, reorderedItem);
-
-      setCurrentHabits(items);
-      // Here you would typically update the order in your backend
-      // updateHabitOrder(items.map(habit => habit.id));
-    },
-    [currentHabits],
-  );
-
-  const renderCurrentHabits = () => {
-    if (!isClient) return null;
-    return (
-      <DragDropContext onDragEnd={onDragEnd} key={date.toISOString()}>
-        <Droppable droppableId="habits">
-          {(provided, snapshot) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className={cn(
-                "space-y-2 transition-colors duration-200",
-                snapshot.isDraggingOver && "rounded-md bg-background p-2",
-              )}
-            >
-              {currentHabits.map((habit, index) => (
-                <Draggable
-                  key={`${habit.id}-${date.toISOString()}`}
-                  draggableId={`${habit.id}-${date.toISOString()}`}
-                  index={index}
-                >
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className={cn(
-                        "flex items-center justify-between rounded-md border-b border-gray-700 p-4 transition-all duration-200",
-                        snapshot.isDragging && "bg-background shadow-lg",
-                      )}
-                    >
-                      {/* Habit content */}
-                      <div className="flex items-center space-x-3">
-                        <div {...provided.dragHandleProps}>
-                          <GripVertical className="text-gray-400" />
-                        </div>
-                        <span
-                          onClick={() => onHabitSelect(habit)}
-                          className="hover:cursor-pointer"
-                        >
-                          {habit.title}
-                        </span>
-                      </div>
-                      {/* Habit actions */}
-                      {/* ... (rest of the habit actions remain the same) */}
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-    );
-  };
-
   return isLoading ? (
     <PreLoader />
   ) : (
     <div className="bg-dark min-h-screen space-y-6 p-4 text-white">
       <div className="flex items-center justify-between">
         <div className="flex space-x-4">
-          <Button
-            variant={"outline"}
-            className={cn(
-              "rounded-full bg-gray-700 p-4",
-              !date && "text-muted-foreground",
-            )}
-          >
-            Searh <Search className="ml-2 h-4 w-4 text-primaryOrange" />
-          </Button>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -419,7 +360,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
                 )}
               >
                 {isToday(date) ? "Today" : date.toLocaleDateString()}{" "}
-                <CalendarIcon className="ml-2 h-4 w-4" />{" "}
+                <CalendarIcon className="ml-2 h-4 w-4 text-primaryOrange" />{" "}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -436,9 +377,11 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
             className={cn(
               "rounded-full bg-gray-700 p-4",
               !date && "text-muted-foreground",
+              sortingEnabled && "bg-primaryOrange",
             )}
+            onClick={() => setSortingEnabled(!sortingEnabled)}
           >
-            <ArrowDownNarrowWide className="h-6 w-6 bg-primaryOrange" />
+            <ArrowDownNarrowWide className="h-6 w-6" />
           </Button>
         </div>
         <button
@@ -468,7 +411,9 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
       )}
 
       {/* Current Habits */}
-      {renderCurrentHabits()}
+      {renderHabitList(
+        habits.filter((habit: any) => habit.status === HabitStatus.CURRENT),
+      )}
 
       {/* Completed Habits */}
       {habits.filter((habit: any) => habit.status === "COMPLETED").length >
