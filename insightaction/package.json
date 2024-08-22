@@ -29,6 +29,8 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
+    "firebase": "^10.12.5",
+    "firebase-admin": "^12.3.0",
     "gray-matter": "^4.0.3",
     "husky": "^9.1.1",
     "lucide-react": "^0.404.0",

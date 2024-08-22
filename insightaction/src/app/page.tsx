@@ -13,6 +13,8 @@ import Team from "@/components/Team";
 import { getAllPosts } from "@/utils/markdown";
 import { Metadata } from "next";
 
+
+
 export const metadata: Metadata = {
   title: "Insightaction -  Build Lasting Habits with Atomic Precision.",
   description:
@@ -20,8 +22,8 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  const posts = getAllPosts(["title", "date", "excerpt", "coverImage", "slug"]);
 
+  
   return (
     <main>
       <ScrollUp />
