@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,6 +19,7 @@ import {
 import {
   ArrowDownNarrowWide,
   CalendarIcon,
+  GripVertical,
   MoreVertical,
   Search,
 } from "lucide-react";
@@ -35,6 +36,8 @@ import { trackHabit, fetchHabits } from "@/actions/habit";
 import { getHabitsForDay } from "@/actions/habit/test";
 import PreLoader from "../Common/PreLoader";
 import { EditHabitModal } from "./edithabit";
+import dynamic from "next/dynamic";
+import SimpleHabitList from "./DragTest";
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -47,7 +50,13 @@ type HabitWithStats = Habit & {
   failed: number;
   streak: number;
   total: number;
+  remainingCount: number;
 };
+
+interface HabitDayResult {
+  success: boolean;
+  habits: HabitWithStats[];
+}
 
 const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const [date, setDate] = useState<Date>(new Date());
@@ -55,12 +64,54 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const [habits, setHabits] = useState<HabitWithStats[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
+  const [tempCount, setTempCount] = useState(0);
+  const [isClient, setIsClient] = useState(false);
+  const [sortingEnabled, setSortingEnabled] = useState(false);
+  const [isStackModalOpen, setIsStackModalOpen] = useState(false);
 
-  const handleHabitSkip = (id: any) => {};
-  const handleHabitFail = (id: any) => {};
-  const handleHabitUncomplete = (id: any) => {};
-  const handleHabitUnskip = (id: any) => {};
-  const handleHabitUnfail = (id: any) => {};
+  let preferenceOrder: HabitWithStats[] = [];
+  const preferenceOrderString = localStorage.getItem("habitsOrder");
+  if (preferenceOrderString !== null) {
+    preferenceOrder = JSON.parse(preferenceOrderString);
+  }
+
+  // useEffect(() => {
+  //   setHabits(preferenceOrder);
+  // });
+
+  const handleCountStats = (goalCount: number, remainingCount: number) => {
+    const displayCount = goalCount - remainingCount;
+    setTempCount(displayCount);
+  };
+
+  const handleOpenChange = useCallback((habit: HabitWithStats) => {
+    return (open: boolean) => {
+      if (open) {
+        // Perform actions when the popover opens
+        handleCountStats(
+          habit.goalCount as number,
+          habit.remainingCount as number,
+        );
+        console.log("Popover opened");
+      }
+    };
+  }, []);
+
+  const incrementCount = (goalCount: number) => {
+    if (tempCount < goalCount) {
+      setTempCount((prev) => prev + 1);
+    }
+  };
+
+  const decrementCount = (completedCount: number) => {
+    if (tempCount > completedCount) {
+      setTempCount((prev) => prev - 1);
+    }
+  };
+
+  useEffect(() => {
+    setIsClient(true);
+  }, [date]);
 
   useEffect(() => {
     fetchCompletedHabits();
@@ -69,7 +120,6 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const handleEditHabit = (habit: Habit) => {
     setEditingHabit(habit);
   };
-
   const fetchCompletedHabits = async () => {
     setIsLoading(true);
 
@@ -77,9 +127,26 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     const result = await getHabitsForDay(localDateString);
     console.log(date);
     console.log(localDateString, result);
+
     if ("success" in result && result.success) {
-      //@ts-ignore
-      setHabits(result.habits);
+      const typedResult = result as HabitDayResult;
+
+      // Get the order from localStorage
+      const orderIds = getOrderFromLocalStorage();
+
+      // Sort the habits based on the order
+      const sortedHabits = typedResult.habits.sort((a, b) => {
+        const indexA = orderIds.indexOf(a.id);
+        const indexB = orderIds.indexOf(b.id);
+
+        // If an id is not in the order array, put it at the end
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+
+        return indexA - indexB;
+      });
+
+      setHabits(sortedHabits);
       setIsLoading(false);
     } else {
       console.error("Failed to fetch completed habits:", result);
@@ -87,9 +154,23 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     }
   };
 
-  const handleHabitCompletion = async (habitId: string, status: HabitStatus, completed: boolean ) => {
-    const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+  // Helper function to get the order from localStorage
+  const getOrderFromLocalStorage = () => {
+    const orderString = localStorage.getItem("habitsOrder");
+    return orderString ? JSON.parse(orderString) : [];
+  };
+
+  const handleHabitCompletion = async (
+    habitId: string,
+    status: HabitStatus,
+    completed: boolean,
+    completedCount?: number,
+    partial = false,
+  ) => {
+    const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     try {
+      console.log(habitId, status, completedCount, partial);
+
       const result = await trackHabit({
         habitId,
         localDateString,
@@ -108,145 +189,151 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     }
   };
 
-  const renderHabitList = (filteredHabits: any, itemClassName = "") => (
-    <div className="space-y-0">
-      {filteredHabits.map((habit: any, index: any) => (
-        <div
-          key={habit.id}
-          className={`flex items-center justify-between p-4 ${
-            index !== filteredHabits.length - 1
-              ? "border-b border-gray-700"
-              : ""
-          } ${itemClassName}`}
-        >
-          <span
+  const renderHabitList = (filteredHabits: any, itemClassName = "") => {
+    const sortedHabits = filteredHabits.sort((a: any, b: any) => {
+      return preferenceOrder.indexOf(a.id) - preferenceOrder.indexOf(b.id);
+    });
+
+    return (
+      <div className="space-y-0">
+        {sortedHabits.map((habit: any, index: any) => (
+          <div
             key={habit.id}
-            onClick={() => onHabitSelect(habit)}
-            className=" hover:cursor-pointer"
+            className={`flex items-center justify-between p-4 ${
+              index !== filteredHabits.length - 1
+                ? "border-b border-gray-700"
+                : ""
+            } ${itemClassName}`}
           >
-            {habit.title}
-          </span>
-          <div className="flex items-center space-x-2">
-            {habit.status === HabitStatus.CURRENT && (
-              <button
-                onClick={() =>
-                  handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)
-                }
-                className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
+            <div className="flex flex-col">
+              <span
+                onClick={() => onHabitSelect(habit)}
+                className="hover:cursor-pointer"
               >
-                {/* <button
-                onClick={() => handleHabitCompletion(habit.id)}
-                className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
-              ></button> */}
-                <span className="mr-2">Done</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+                {habit.title}
+              </span>
+              <span className="m-1 text-sm text-gray-500">
+                {habit.environment}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              {habit.status === HabitStatus.CURRENT && (
+                <button
+                  onClick={() =>
+                    handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)
+                  }
+                  className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {habit.status === HabitStatus.CURRENT && (
-                  <>
+                  <span className="mr-2">Done</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {habit.status === HabitStatus.CURRENT && (
+                    <>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleHabitCompletion(
+                            habit.id,
+                            HabitStatus.SKIPPED,
+                            false,
+                          )
+                        }
+                      >
+                        Skip
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleHabitCompletion(
+                            habit.id,
+                            HabitStatus.FAILED,
+                            false,
+                          )
+                        }
+                      >
+                        Failed
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleHabitCompletion(
+                            habit.id,
+                            HabitStatus.COMPLETED,
+                            true,
+                          )
+                        }
+                      >
+                        Done
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {habit.status === HabitStatus.COMPLETED && (
                     <DropdownMenuItem
                       onClick={() =>
                         handleHabitCompletion(
                           habit.id,
-                          HabitStatus.SKIPPED,
+                          HabitStatus.CURRENT,
                           false,
                         )
                       }
                     >
-                      Skip
+                      Undo
                     </DropdownMenuItem>
+                  )}
+                  {habit.status === "SKIPPED" && (
                     <DropdownMenuItem
                       onClick={() =>
                         handleHabitCompletion(
                           habit.id,
-                          HabitStatus.FAILED,
+                          HabitStatus.CURRENT,
                           false,
                         )
                       }
                     >
-                      Failed
+                      Undo Skip
                     </DropdownMenuItem>
+                  )}
+                  {habit.status === "FAILED" && (
                     <DropdownMenuItem
                       onClick={() =>
                         handleHabitCompletion(
                           habit.id,
-                          HabitStatus.COMPLETED,
-                          true,
+                          HabitStatus.CURRENT,
+                          false,
                         )
                       }
                     >
-                      Done
+                      Undo Fail
                     </DropdownMenuItem>
-                  </>
-                )}
-                {habit.status === HabitStatus.COMPLETED && (
-                  <DropdownMenuItem
-                    onClick={() =>
-                      handleHabitCompletion(
-                        habit.id,
-                        HabitStatus.CURRENT,
-                        false,
-                      )
-                    }
-                  >
-                    Undo
+                  )}
+                  <DropdownMenuItem>Show streak</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleEditHabit(habit)}>
+                    Edit
                   </DropdownMenuItem>
-                )}
-                {habit.status === "SKIPPED" && (
-                  <DropdownMenuItem
-                    onClick={() =>
-                      handleHabitCompletion(
-                        habit.id,
-                        HabitStatus.CURRENT,
-                        false,
-                      )
-                    }
-                  >
-                    Undo Skip
-                  </DropdownMenuItem>
-                )}
-                {habit.status === "FAILED" && (
-                  <DropdownMenuItem
-                    onClick={() =>
-                      handleHabitCompletion(
-                        habit.id,
-                        HabitStatus.CURRENT,
-                        false,
-                      )
-                    }
-                  >
-                    Undo Fail
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem>Show streak</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleEditHabit(habit)}>
-                  Edit
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
-  );
+        ))}
+      </div>
+    );
+  };
 
   const isToday = (someDate: Date) => {
     const today = new Date();
@@ -263,15 +350,6 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     <div className="bg-dark min-h-screen space-y-6 p-4 text-white">
       <div className="flex items-center justify-between">
         <div className="flex space-x-4">
-          <Button
-            variant={"outline"}
-            className={cn(
-              "rounded-full bg-gray-700 p-4",
-              !date && "text-muted-foreground",
-            )}
-          >
-            Searh <Search className="ml-2 h-4 w-4 text-primaryOrange" />
-          </Button>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -282,7 +360,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
                 )}
               >
                 {isToday(date) ? "Today" : date.toLocaleDateString()}{" "}
-                <CalendarIcon className="ml-2 h-4 w-4" />{" "}
+                <CalendarIcon className="ml-2 h-4 w-4 text-primaryOrange" />{" "}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -299,9 +377,11 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
             className={cn(
               "rounded-full bg-gray-700 p-4",
               !date && "text-muted-foreground",
+              sortingEnabled && "bg-primaryOrange",
             )}
+            onClick={() => setSortingEnabled(!sortingEnabled)}
           >
-            <ArrowDownNarrowWide className="h-6 w-6 bg-primaryOrange" />
+            <ArrowDownNarrowWide className="h-6 w-6" />
           </Button>
         </div>
         <button

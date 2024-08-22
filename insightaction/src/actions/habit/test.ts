@@ -43,7 +43,7 @@ export const getHabitsForDay = async (
     }
 
     const currentDate = new Date(date);
-console.log(currentDate,"faf",date)
+    console.log(currentDate, "faf", date);
     const habits = await prisma.habit.findMany({
       where: {
         userId: user.id,
@@ -64,7 +64,7 @@ console.log(currentDate,"faf",date)
           day.date.getUTCDate() === currentDate.getUTCDate(),
       );
 
-      const {skipped, failed, total, completed} = getCount(habit.trackedDays);
+      const { skipped, failed, total, completed } = getCount(habit.trackedDays);
       return {
         ...habit,
         status: trackedDay?.status || status,
@@ -79,6 +79,41 @@ console.log(currentDate,"faf",date)
     return { success: true, habits: habitsWithStats };
   } catch (error: any) {
     return { error: error.message || "Failed to fetch habits with stats." };
+  }
+};
+
+export const getHabitById = async (
+  id: string
+) => {
+  try {
+    const habit = await prisma.habit.findFirst({
+      where: {
+        id: id,
+        isArchived: false,
+      },
+      include: {
+        trackedDays: true,
+      },
+    });
+
+    if (!habit) {
+      return { error: "Habit not found" };
+    }
+
+    const { skipped, failed, total, completed } = getCount(habit.trackedDays);
+
+    const habitWithStats = {
+      ...habit,
+      completed: completed,
+      skipped: skipped,
+      failed: failed,
+      streak: calculateLongestStreak(habit),
+      total: total,
+    };
+
+    return habitWithStats;
+  } catch (error: any) {
+    return { error: error.message || "Failed to fetch habit with stats." };
   }
 };
 
@@ -183,10 +218,10 @@ function getCount(trackedDays: HabitTracker[]) {
   let failed = 0;
 
   trackedDays.some((d) => {
-    if (d.status === HabitStatus.COMPLETED) completed++
-    else if (d.status === HabitStatus.SKIPPED) skipped++
-    else if (d.status === HabitStatus.FAILED) failed++
+    if (d.status === HabitStatus.COMPLETED) completed++;
+    else if (d.status === HabitStatus.SKIPPED) skipped++;
+    else if (d.status === HabitStatus.FAILED) failed++;
   });
 
-  return {completed, skipped, failed, total: trackedDays.length}
+  return { completed, skipped, failed, total: trackedDays.length };
 }

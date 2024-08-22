@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Package2,
@@ -16,8 +18,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useState } from "react";
+import SimpleHabitList from "./DragTest";
+import EditProfileModal from "../Profile/EditProfileModal";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export function Sidebar() {
+  const [isStackModalOpen, setIsStackModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  const router = useRouter();
+
+  const closeHandlerStack = () => {
+    setIsStackModalOpen(false);
+    toast.success("habits stacked successfully")
+    router.refresh();
+  }
+
   return (
     <div className="bg-dark hidden h-screen border-r border-gray-600 md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
@@ -69,6 +87,7 @@ export function Sidebar() {
               <Link
                 href="#"
                 className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
+                onClick={() => setIsProfileModalOpen(true)}
               >
                 <Settings className="h-4 w-4" />
                 App Settings
@@ -76,6 +95,7 @@ export function Sidebar() {
               <Link
                 href="#"
                 className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
+                onClick={() => setIsStackModalOpen(true)}
               >
                 <LayoutList className="h-4 w-4" />
                 Manage Habits
@@ -83,6 +103,14 @@ export function Sidebar() {
             </div>
           </nav>
         </div>
+        {isStackModalOpen && <SimpleHabitList date={new Date()} onClose={closeHandlerStack} />}
+        {isProfileModalOpen && (
+          <EditProfileModal
+            onClose={() => {
+              setIsProfileModalOpen(false);
+            }}
+          />
+        )}
         <div className="mt-auto p-4">
           <Card x-chunk="dashboard-02-chunk-0">
             <CardHeader className="p-2 pt-0 md:p-4">
