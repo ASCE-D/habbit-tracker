@@ -28,10 +28,14 @@ type EventName =
   | "subscription_payment_success"
   | "subscription_payment_recovered";
 
-type Payload = {
-data:any
-};
-
+  type Payload = {
+    meta: {
+      test_mode: boolean;
+      event_name: EventName;
+    };
+    // Possibly not accurate: it's missing the relationships field and any custom data you add
+    data: LemonsqueezySubscription;
+  };
 
 
 export const POST = async (request: NextRequest) => {
@@ -50,16 +54,20 @@ export const POST = async (request: NextRequest) => {
     }
 
     const payload = JSON.parse(text) as Payload;
-    const 
-  data
-     = payload as Payload;
+      //@ts-ignore
+    const {email} = JSON.parse(request.body.user_email);
+    const {
+      meta: { event_name: eventName },
+      data: subscription,
+    } = payload as Payload;
+  
    // Ensure we have a user_id in custom_data
    //@ts-ignore
-   if (!data.attributes.customer_email) {
+   if (!email) {
     throw new Error('Missing email');
   }
-//@ts-ignore
-  const email = data.attributes.customer_email;
+
+
 //@ts-ignore
     switch (eventName) {
       case "order_created":
