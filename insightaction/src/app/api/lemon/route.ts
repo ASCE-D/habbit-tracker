@@ -72,7 +72,17 @@ export const POST = async (request: NextRequest) => {
 
     switch (eventName) {
       case "order_created":
+        await prisma.user.update({
+          where: { email },
+          data: { isPaid: true },
+        });
+        break;
       case "order_refunded":
+        await prisma.user.update({
+          where: { email },
+          data: { isPaid: false },
+        });
+        break;
       case "subscription_created":
       case "subscription_resumed":
       case "subscription_payment_success":
