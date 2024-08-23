@@ -1,4 +1,3 @@
-
 import crypto from "crypto";
 //@ts-ignore
 import { listAllSubscriptions } from "lemonsqueezy.ts";
@@ -6,15 +5,13 @@ import { NextRequest } from "next/server";
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
-// Put this in your billing lib and just import the type instead
+
 type LemonsqueezySubscription = Awaited<ReturnType<typeof listAllSubscriptions>>["data"][number];
 
 const isError = (error: unknown): error is Error => {
   return error instanceof Error;
 };
 
-// Add more events here if you want
-// https://docs.lemonsqueezy.com/api/webhooks#event-types
 type EventName =
   | "order_created"
   | "order_refunded"
@@ -28,25 +25,32 @@ type EventName =
   | "subscription_payment_success"
   | "subscription_payment_recovered";
 
-  type Payload = {
-    meta: {
-      test_mode: boolean;
-      event_name: EventName;
-    };
-    // Possibly not accurate: it's missing the relationships field and any custom data you add
-    data: LemonsqueezySubscription;
+type Payload = {
+  meta: {
+    test_mode: boolean;
+    event_name: EventName;
+    webhook_id: string;
   };
-
+  data: {
+    id: string;
+    type: string;
+    attributes: {
+      user_email: string;
+      [key: string]: any;
+    };
+    relationships: {
+      [key: string]: any;
+    };
+  };
+};
 
 export const POST = async (request: NextRequest) => {
- console.log('hello',request.body)
   try {
     const text = await request.text();
     const hmac = crypto.createHmac("sha256", process.env["LEMON_SQUEEZY_WEBHOOK_SECRET"] || "ashish");
     const digest = Buffer.from(hmac.update(text).digest("hex"), "utf8");
     const signature = Buffer.from(request.headers.get("x-signature") as string, "utf8");
-
-  //@ts-ignore
+//@ts-ignore
     if (!crypto.timingSafeEqual(digest, signature)) {
       return new Response("Invalid signature.", {
         status: 400,
@@ -54,70 +58,44 @@ export const POST = async (request: NextRequest) => {
     }
 
     const payload = JSON.parse(text) as Payload;
-    console.log(payload)
-      //@ts-ignore
-    const {email} = JSON.parse(request.body.user_email);
+    console.log(payload);
+
+    const email = payload.data.attributes.user_email;
     const {
       meta: { event_name: eventName },
-      data: subscription,
-    } = payload as Payload;
-  
-   // Ensure we have a user_id in custom_data
-   //@ts-ignore
-   if (!email) {
-    throw new Error('Missing email');
-  }
+      data,
+    } = payload;
 
+    if (!email) {
+      throw new Error('Missing email');
+    }
 
-//@ts-ignore
     switch (eventName) {
       case "order_created":
-        // Do stuff here if you are using orders
-        await prisma.user.update({
-          where: { email: email as string },
-          data: { isPaid: true },
-        });
-        break;
       case "order_refunded":
-        // Do stuff here if you are using orders
+      case "subscription_created":
+      case "subscription_resumed":
+      case "subscription_payment_success":
+      case "subscription_payment_recovered":
         await prisma.user.update({
-          where: { email: email as string },
+          where: { email },
           data: { isPaid: true },
         });
         break;
-      case "subscription_created":
       case "subscription_cancelled":
-      case "subscription_resumed":
       case "subscription_expired":
+      case "subscription_payment_failed":
+        await prisma.user.update({
+          where: { email },
+          data: { isPaid: false },
+        });
+        break;
       case "subscription_paused":
       case "subscription_unpaused":
-      case "subscription_payment_failed":
-        case "subscription_payment_success":
-          case "subscription_payment_recovered":
-            await prisma.user.update({
-              where: { email: email as string },
-              data: { isPaid: true },
-            });
-            break;
-          case "subscription_cancelled":
-          case "subscription_expired":
-          case "subscription_payment_failed":
-            await prisma.user.update({
-              where: { email: email as string },
-              data: { isPaid: true },
-            });
-            break;
-          case "subscription_paused":
-          case "subscription_unpaused":
-        // Do something with the subscription here, like syncing to your database
-        //@ts-ignore
-        console.log(subscription);   
-        //@ts-ignore
+        console.log(data);
         console.log(`Subscription ${eventName} for user ${email}`);
         break;
-      
       default:
-        //@ts-ignore
         throw new Error(`🤷‍♀️ Unhandled event: ${eventName}`);
     }
   } catch (error: unknown) {
@@ -135,6 +113,4 @@ export const POST = async (request: NextRequest) => {
   return new Response(null, {
     status: 200,
   });
-
-
 };
