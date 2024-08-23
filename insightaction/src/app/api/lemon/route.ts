@@ -29,12 +29,7 @@ type EventName =
   | "subscription_payment_recovered";
 
 type Payload = {
-  meta: {
-    test_mode: boolean;
-    event_name: EventName;
-  };
-  // Possibly not accurate: it's missing the relationships field and any custom data you add
-  data: LemonsqueezySubscription;
+data:any
 };
 
 
@@ -55,18 +50,17 @@ export const POST = async (request: NextRequest) => {
     }
 
     const payload = JSON.parse(text) as Payload;
-    const {
-      meta: { event_name: eventName },
-      data: subscription,
-     data,
-    } = payload as Payload;
+    const 
+  data
+     = payload as Payload;
    // Ensure we have a user_id in custom_data
+   //@ts-ignore
    if (!data.attributes.customer_email) {
-    throw new Error('Missing user_id in custom_data');
+    throw new Error('Missing email');
   }
-
+//@ts-ignore
   const email = data.attributes.customer_email;
-
+//@ts-ignore
     switch (eventName) {
       case "order_created":
         // Do stuff here if you are using orders
@@ -107,12 +101,14 @@ export const POST = async (request: NextRequest) => {
           case "subscription_paused":
           case "subscription_unpaused":
         // Do something with the subscription here, like syncing to your database
-        
+        //@ts-ignore
         console.log(subscription);   
+        //@ts-ignore
         console.log(`Subscription ${eventName} for user ${email}`);
         break;
       
       default:
+        //@ts-ignore
         throw new Error(`🤷‍♀️ Unhandled event: ${eventName}`);
     }
   } catch (error: unknown) {
@@ -130,4 +126,6 @@ export const POST = async (request: NextRequest) => {
   return new Response(null, {
     status: 200,
   });
+
+
 };
