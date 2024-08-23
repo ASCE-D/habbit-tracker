@@ -39,7 +39,7 @@ type EventName =
 
 
 export const POST = async (request: NextRequest) => {
- console.log('hello')
+ console.log('hello',request.body)
   try {
     const text = await request.text();
     const hmac = crypto.createHmac("sha256", process.env["LEMON_SQUEEZY_WEBHOOK_SECRET"] || "ashish");
