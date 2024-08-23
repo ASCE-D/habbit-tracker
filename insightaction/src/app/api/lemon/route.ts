@@ -54,6 +54,7 @@ export const POST = async (request: NextRequest) => {
     }
 
     const payload = JSON.parse(text) as Payload;
+    console.log(payload)
       //@ts-ignore
     const {email} = JSON.parse(request.body.user_email);
     const {
