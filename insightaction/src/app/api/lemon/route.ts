@@ -73,6 +73,8 @@ export const POST = async (request: NextRequest) => {
 
     switch (eventName) {
       case "order_created":
+
+      // do your db call here 
         await prisma.user.update({
           where: { email },
           data: { isPaid: true },

@@ -21,7 +21,7 @@ const PaymentPage = () => {
           </Button>
           <Button 
             className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
-            onClick={() => window.open('https://insightaction.lemonsqueezy.com/checkout', '_blank')}
+            onClick={() => window.open('https://insightaction.lemonsqueezy.com/buy/0f7df2f1-2de9-4a17-8479-9ae3f070ec6a', '_blank')}
           >
             Pay with International Methods
           </Button>
