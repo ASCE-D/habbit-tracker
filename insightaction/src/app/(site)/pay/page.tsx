@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 
 const PaymentPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-primary flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-white shadow-xl">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">Choose Your Payment Method</CardTitle>
