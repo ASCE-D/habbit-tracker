@@ -47,7 +47,9 @@ type Payload = {
 export const POST = async (request: NextRequest) => {
   try {
     const text = await request.text();
-    const hmac = crypto.createHmac("sha256", process.env.LEMON_SQUEEZY_WEBHOOK_SECRET || "");
+    const hmac = crypto.createHmac("sha256", process.env.LEMON_SQUEEZY_WEBHOOK_SECRET !);
+     const x = process.env.LEMON_SQUEEZY_WEBHOOK_SECRET!
+     console.log(x)
     const digest = Buffer.from(hmac.update(text).digest("hex"), "utf8");
     const signature = Buffer.from(request.headers.get("x-signature") as string, "utf8");
 //@ts-ignore
