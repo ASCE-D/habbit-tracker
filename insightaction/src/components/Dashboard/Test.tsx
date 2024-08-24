@@ -121,9 +121,12 @@ export function Sidebar() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
-              <Button size="sm" className="w-full">
-                Upgrade
-              </Button>
+            <a href="/pay">
+  <Button size="sm" className="w-full">
+    Upgrade
+  </Button>
+</a>
+
             </CardContent>
           </Card>
         </div>

@@ -99,7 +99,7 @@ export const POST = async (request: NextRequest) => {
       return new Response("Missing Razorpay signature", { status: 400 });
     }
 
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET || "";
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
     if (!secret) {
       throw new Error("RAZORPAY_WEBHOOK_SECRET is not set");
     }
