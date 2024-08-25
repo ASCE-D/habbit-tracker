@@ -55,7 +55,7 @@ export default function ComingSoon({ feature }: { feature: string }) {
         </CardHeader>
         <CardContent>
           <p className="mb-6 text-center">
-            We're working hard to bring you something amazing. Stay tuned!
+            We&apos;re working hard to bring you something amazing. Stay tuned!
           </p>
           <div className="space-y-4">
             <Input
@@ -75,7 +75,7 @@ export default function ComingSoon({ feature }: { feature: string }) {
         </CardContent>
         <CardFooter className="justify-center">
           <p className="text-sm text-gray-400">
-            We'll let you know when we launch.
+            We&apos;ll let you know when we launch.
           </p>
         </CardFooter>
       </Card>
