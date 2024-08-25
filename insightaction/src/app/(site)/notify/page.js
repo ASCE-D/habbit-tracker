@@ -17,7 +17,7 @@ export default function Home() {
         token: token,
         title: "Test Notification",
         message: "This is a test notification",
-        link: "/contact",
+        link: "/journal/habits",
       }),
       
     })

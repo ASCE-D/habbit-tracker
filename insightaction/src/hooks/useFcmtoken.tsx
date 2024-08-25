@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { fetchToken, messaging } from "../../firebase";
 
+
 async function getNotificationPermissionAndToken() {
   // Step 1: Check if Notifications are supported in the browser.
   if (!("Notification" in window)) {

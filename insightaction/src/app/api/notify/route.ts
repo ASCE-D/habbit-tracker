@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   console.log('here')
-  const serviceAccount = process.env.service!
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!)
   admin.initializeApp({
     //@ts-ignore
     credential: admin.credential.cert(serviceAccount),
