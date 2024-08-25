@@ -45,7 +45,7 @@ model User {
   emailVerified         DateTime?
   image                 String?
   password              String?
-  isPaid                Boolean   @default(false) 
+  isPaid                Boolean    @default(false)
   goals                 Goal[]
   habits                Habit[]
   reminders             Reminder[]
@@ -166,4 +166,10 @@ model Reminder {
 
   @@index([userId, habitId])
   @@index([time, isActive])
+}
+
+model Interested {
+  id      String @id @default(uuid())
+  email   String
+  feature String
 }

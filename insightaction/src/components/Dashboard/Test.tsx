@@ -22,19 +22,20 @@ import { useState } from "react";
 import SimpleHabitList from "./DragTest";
 import EditProfileModal from "../Profile/EditProfileModal";
 import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export function Sidebar() {
   const [isStackModalOpen, setIsStackModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const router = useRouter();
+  const pathname = usePathname();
 
   const closeHandlerStack = () => {
     setIsStackModalOpen(false);
-    toast.success("habits stacked successfully")
+    toast.success("habits stacked successfully");
     router.refresh();
-  }
+  };
 
   return (
     <div className="bg-dark hidden h-screen border-r border-gray-600 md:block">
@@ -59,14 +60,18 @@ export function Sidebar() {
                 GOALS
               </h3>
               <Link
-                href="#"
-                className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
+                href="/journal/habits"
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+                  pathname === "/journal/habits"
+                    ? "text-primaryOrange"
+                    : "text-muted-foreground hover:text-primaryOrange"
+                }`}
               >
                 <Target className="h-4 w-4" />
-                All Goals
+                All Habits
               </Link>
               <Link
-                href="/nt"
+                href="/coming-soon/notification"
                 className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
               >
                 <FolderClosed className="h-4 w-4" />
@@ -103,7 +108,9 @@ export function Sidebar() {
             </div>
           </nav>
         </div>
-        {isStackModalOpen && <SimpleHabitList date={new Date()} onClose={closeHandlerStack} />}
+        {isStackModalOpen && (
+          <SimpleHabitList date={new Date()} onClose={closeHandlerStack} />
+        )}
         {isProfileModalOpen && (
           <EditProfileModal
             onClose={() => {
@@ -121,12 +128,11 @@ export function Sidebar() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
-            <a href="/pay">
-  <Button size="sm" className="w-full">
-    Upgrade
-  </Button>
-</a>
-
+              <a href="/pay">
+                <Button size="sm" className="w-full">
+                  Upgrade
+                </Button>
+              </a>
             </CardContent>
           </Card>
         </div>

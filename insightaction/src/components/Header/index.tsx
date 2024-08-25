@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import menuData from "./menuData";
+import SVGComponent from "../Common/SVGComponent";
 
 const Header = () => {
   const { data: session } = useSession();
@@ -61,7 +62,8 @@ const Header = () => {
                   sticky ? "py-2" : "py-5"
                 } `}
               >
-                {pathUrl !== "/" ? (
+                <SVGComponent />
+                {/* {pathUrl !== "/" ? (
                   <>
                     <Image
                       src={`/images/logo/logo.svg`}
@@ -99,9 +101,10 @@ const Header = () => {
                       className="header-logo hidden w-full dark:block"
                     />
                   </>
-                )}
+                )} */}
               </Link>
             </div>
+
             <div className="flex w-full items-center justify-between px-4">
               <div>
                 <button
@@ -332,7 +335,7 @@ const Header = () => {
                       <>
                         <Link
                           href="/signin"
-                          className={`rounded-lg bg-primaryOrange mx-6 px-6 py-3 text-base font-medium hover:opacity-70 ${
+                          className={`mx-6 rounded-lg bg-primaryOrange px-6 py-3 text-base font-medium hover:opacity-70 ${
                             sticky ? "text-dark dark:text-white" : "text-white"
                           }`}
                         >

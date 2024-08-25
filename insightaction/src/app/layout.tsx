@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import PreLoader from "@/components/Common/PreLoader";
 import { usePathname } from "next/navigation";
 
+
 export default function RootLayout({
   children,
 }: {

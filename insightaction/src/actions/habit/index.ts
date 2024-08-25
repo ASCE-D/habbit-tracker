@@ -604,7 +604,7 @@ export const updateProfile = async (data: any) => {
     }
 
     const userEmail = session.user.email;
-    console.log(data)
+    console.log(data);
 
     const updatedUser = await prisma.user.update({
       where: { email: userEmail as string },
@@ -616,6 +616,23 @@ export const updateProfile = async (data: any) => {
     });
 
     return { success: true, updatedUser };
+  } catch (error: any) {
+    return { error: error.message || "Failed to update user profile." };
+  }
+};
+
+export const addInterested = async (data: any) => {
+  try {
+    console.log(data);
+
+    const result = await prisma.interested.create({
+      data: {
+        feature: data.features,
+        email: data.email,
+      },
+    });
+    console.log("result", result);
+    return { success: true, data: result };
   } catch (error: any) {
     return { error: error.message || "Failed to update user profile." };
   }

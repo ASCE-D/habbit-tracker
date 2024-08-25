@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Interested" ALTER COLUMN "feature" SET NOT NULL,
+ALTER COLUMN "feature" SET DATA TYPE TEXT;
