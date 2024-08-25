@@ -12,6 +12,14 @@ const Timer = () => {
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [inputTime, setInputTime] = useState('');
+  const [notificationPermission, setNotificationPermission] = useState('default');
+
+  useEffect(() => {
+    // Check for notification permission when component mounts
+    if ("Notification" in window) {
+      setNotificationPermission(Notification.permission);
+    }
+  }, []);
 
   useEffect(() => {
     let interval = null;
@@ -23,9 +31,15 @@ const Timer = () => {
       setIsActive(false);
       setIsPaused(false);
       clearInterval(interval);
+      if (notificationPermission === 'granted') {
+        new Notification('Timer Finished!', {
+          body: 'Your timer has completed.',
+          icon: '/path-to-your-icon.png' // Optional: Add an icon for your notification
+        });
+      }
     }
     return () => clearInterval(interval);
-  }, [isActive, isPaused, time]);
+  }, [isActive, isPaused, time, notificationPermission]);
 
   const handleStart = () => {
     if (inputTime && !isNaN(inputTime)) {
@@ -52,6 +66,14 @@ const Timer = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const requestNotificationPermission = () => {
+    if ("Notification" in window) {
+      Notification.requestPermission().then(permission => {
+        setNotificationPermission(permission);
+      });
+    }
+  };
+
   return (
     <div className="flex justify-center items-center h-screen">
       <Card className="w-half max-w-sm mx-auto">
@@ -74,6 +96,11 @@ const Timer = () => {
                 className="w-full"
               />
             </div>
+            {notificationPermission !== 'granted' && (
+              <Button onClick={requestNotificationPermission}>
+                Enable Notifications
+              </Button>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex justify-center space-x-2">
