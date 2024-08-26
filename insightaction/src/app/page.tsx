@@ -14,17 +14,20 @@ import { getAllPosts } from "@/utils/markdown";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://insightaction.pureapps.tech"),
   title: "Insightaction -  Build Lasting Habits with Atomic Precision.",
   description:
     "A comprehensive Next.js application designed for individuals committed to personal growth. It integrates cutting-edge habit formation techniques, interactive tools, and progress tracking to empower users in creating lasting positive changes in their lives.",
   twitter: {
-    card:"summary_large_image"
-  }
+    card: "summary_large_image",
+    images: "/opengraph-image.png",
+  },
+  openGraph: {
+    images: "/opengraph-image.png",
+  },
 };
 
 export default function Home() {
-
-  
   return (
     <main>
       <ScrollUp />
