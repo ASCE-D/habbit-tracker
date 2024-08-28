@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/bulknoti",
-      "schedule": "1 * * * *"
+      "schedule": "* * * * *"
     }
   ]
 }
