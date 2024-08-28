@@ -7,7 +7,7 @@ export default function Home() {
   const { token, notificationPermissionStatus } = useFcmToken();
 
   const handleTestNotification = async () => {
-    const response = await fetch("/api/notify", {
+    const response = await fetch("/api/bulknoti", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
