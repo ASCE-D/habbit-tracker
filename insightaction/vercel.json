@@ -1,9 +1,4 @@
-// {
-//     "crons": [{
-//       "path": "/api/bulknoti",
-//       "schedule": "0 */4 * * *"
-//     }]
-//   }
+
   {
     "crons": [{
       "path": "/api/bulknoti",
