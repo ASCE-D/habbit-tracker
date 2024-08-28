@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 
 
-export default async function handler(request: NextRequest) {
+export async function GET(request: NextRequest) {
     // Check if the request is a cron job
     const authHeader = request.headers.get("Authorization");
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
