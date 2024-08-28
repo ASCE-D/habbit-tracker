@@ -11,7 +11,7 @@ if (!admin.apps.length) {
   });
 }
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
 
 //{ title: 'Test Notification', body: 'This is a test notification' }  { link: '/journal/habits' }
 const title = 'Reminder'
