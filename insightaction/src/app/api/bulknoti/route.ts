@@ -40,24 +40,24 @@ const link = '/journal/habits'
         },
       } : undefined,
     };
-console.log(payload)
+// console.log(payload)
     // Send notifications to all tokens
     const responses = await admin.messaging().sendEachForMulticast(
     
       payload
     );
 
-    console.log(`${responses.successCount} notifications sent successfully`);
+    // console.log(`${responses.successCount} notifications sent successfully`);
 
-    if (responses.failureCount > 0) {
-      const failedTokens : any = [];
-      responses.responses.forEach((resp, idx) => {
-        if (!resp.success) {
-          failedTokens.push(tokens[idx]);
-        }
-      });
-      console.log('List of tokens that caused failures: ' + failedTokens);
-    }
+    // if (responses.failureCount > 0) {
+    //   const failedTokens : any = [];
+    //   responses.responses.forEach((resp, idx) => {
+    //     if (!resp.success) {
+    //       failedTokens.push(tokens[idx]);
+    //     }
+    //   });
+    //   console.log('List of tokens that caused failures: ' + failedTokens);
+    // }
 
     return NextResponse.json({ 
       success: true, 
