@@ -2,7 +2,11 @@
   "crons": [
     {
       "path": "/api/cron",
-      "schedule": "0 */4 * * *"
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/bulknoti",
+      "schedule": "0 5 * * *"
     }
   ]
 }
