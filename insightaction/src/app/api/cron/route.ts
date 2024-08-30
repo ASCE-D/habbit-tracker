@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Call the /api/bulknoti route
-    const response = await fetch("/api/bulknoti2.0", {
+    const response = await fetch("https://insightaction.pureapps.tech/api/bulknoti2.0", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
