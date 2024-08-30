@@ -11,13 +11,20 @@ export async function GET(request: NextRequest) {
 
   try {
     // Call the /api/bulknoti route
-    const response = await fetch(`https://insightaction.pureapps.tech/api/bulknoti`, {
-      method: 'GET',
+    const response = await fetch("/api/bulknoti2.0", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        // Add any necessary headers here
+        "Content-Type": "application/json",
       },
-    });
+
+      body: JSON.stringify({
+       
+        title: "Test Notification",
+        message: "This is a test notification",
+        link: "/journal/habits",
+      }),
+      
+    })
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
