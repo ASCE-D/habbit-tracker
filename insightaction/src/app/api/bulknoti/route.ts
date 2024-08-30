@@ -12,7 +12,7 @@ if (!admin.apps.length) {
 }
 
 export async function GET(request: NextRequest) {
-
+  console.log("Notification function triggered");
 //{ title: 'Test Notification', body: 'This is a test notification' }  { link: '/journal/habits' }
 const title = 'Reminder'
 const message = 'hey did we forget to update tracker or wot!! '
@@ -24,6 +24,7 @@ const link = '/journal/habits'
     .get(); 
     const tokens = usersSnapshot.docs.map(doc => doc.data().token)
     console.log(tokens)
+    console.log("Fetched user tokens:", usersSnapshot.size);
     if (tokens.length === 0) {
       return NextResponse.json({ success: false, message: "No valid tokens found" });
     }
