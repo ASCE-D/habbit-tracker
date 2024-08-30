@@ -61,7 +61,7 @@ console.log(payload)
 
     return NextResponse.json({ 
       success: true, 
-      message: `${responses.successCount} notifications sent, ${responses.failureCount} failed.` 
+      message: `${responses.successCount} notifications sent, ${responses.failureCount} failed. ${payload}` 
     });
 
   } catch (error) {
