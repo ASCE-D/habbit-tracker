@@ -3,8 +3,10 @@ import React from "react";
 import OfferList from "./OfferList";
 import { Price } from "@/types/price";
 
+
 const PricingBox = ({ product }: { product: Price }) => {
   // POST request
+  
   const handleSubscription = async (e: any) => {
     e.preventDefault();
     const { data } = await axios.post(
@@ -56,12 +58,16 @@ const PricingBox = ({ product }: { product: Price }) => {
           </div>
         </div>
         <div className="w-full">
+        <a
+      href="/pay"
+      >
           <button
-            onClick={handleSubscription}
+            // onClick={handleSubscription}
             className="inline-block rounded-md bg-primaryOrange px-7 py-3 text-center text-base font-medium text-white transition duration-300 hover:bg-primaryOrange/70"
           >
             Purchase Now
           </button>
+          </a>
         </div>
       </div>
     </div>
