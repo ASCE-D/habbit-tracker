@@ -38,12 +38,12 @@ const PricingBox = ({ product }: { product: Price }) => {
           {product.nickname}
         </span>
         <h2 className="mb-11 text-4xl font-semibold text-white dark:text-white xl:text-[42px] xl:leading-[1.21]">
-          <span className="text-xl font-medium">$ </span>
+          {/* <span className="text-xl font-medium">$ </span>
           <span className="-ml-1 -tracking-[2px]">
             {(product.unit_amount / 100).toLocaleString("en-US", {
               currency: "USD",
             })}
-          </span>
+          </span> */}
 
         </h2>
 

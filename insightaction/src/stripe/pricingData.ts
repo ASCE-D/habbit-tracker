@@ -15,7 +15,7 @@ export const pricingData: Price[] = [
   {
     id: "price_yearly",
     unit_amount: 10.00 * 100, // $10 in cents
-    nickname: "Yearly",
+    nickname: "Free",
     offers: [
       "Unlimited habits",
       "Unlimited goals",
@@ -26,7 +26,7 @@ export const pricingData: Price[] = [
   {
     id: "price_lifetime",
     unit_amount: 100.00 * 100, // Example price, adjust as needed
-    nickname: "Lifetime",
+    nickname: "Free",
     offers: [
       "Lifetime access",
       "Unlimited habits",
