@@ -11,7 +11,8 @@ import ToasterContext from "./api/contex/ToasetContex";
 import { useEffect, useState } from "react";
 import PreLoader from "@/components/Common/PreLoader";
 import { usePathname } from "next/navigation";
-import { GoogleAnalytics } from '@next/third-parties/google'
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { Analytics } from "@vercel/analytics/react";
 
 export default function RootLayout({
   children,
@@ -32,7 +33,7 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning={true} className="!scroll-smooth" lang="en">
       <head>
-         {/* <script async src="https://www.googletagmanager.com/gtag/js?id=G-BYFQBT607C"></script>
+        {/* <script async src="https://www.googletagmanager.com/gtag/js?id=G-BYFQBT607C"></script>
    <script>
   window.dataLayer = window.dataLayer || [];
   
@@ -41,9 +42,7 @@ export default function RootLayout({
 
   gtag('config', 'G-BYFQBT607C');
    </script> */}
-
-      </head >
-
+      </head>
 
       <body>
         {loading ? (
@@ -68,6 +67,7 @@ export default function RootLayout({
         )}
       </body>
       <GoogleAnalytics gaId="G-BYFQBT607C" />
+      <Analytics />
     </html>
   );
 }
