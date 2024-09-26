@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -159,6 +159,22 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     const orderString = localStorage.getItem("habitsOrder");
     return orderString ? JSON.parse(orderString) : [];
   };
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const audio = new Audio("audio/thu-sep-26-2024_L8LUERVy.mp3");
+    console.log(audio)
+    audio.addEventListener("canplaythrough", () => {
+      audioRef.current = audio;
+    });
+  }, []);
+  
+  const playCompletionSound = () => {
+    if (audioRef.current) {
+      audioRef.current.play().catch(error => console.error("Error playing sound:", error));
+    }
+  };
+
 
   const handleHabitCompletion = async (
     habitId: string,
@@ -168,9 +184,19 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     partial = false,
   ) => {
     const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-    try {
-      console.log(habitId, status, completedCount, partial);
+    
+    // Optimistically update the UI
+    setHabits((prevHabits) =>
+      prevHabits.map((habit) =>
+        habit.id === habitId ? { ...habit, status } : habit
+      )
+    );
+       // Play sound effect if the habit is being marked as completed
+       if (status === HabitStatus.COMPLETED) {
+        playCompletionSound();
+      }
 
+    try {
       const result = await trackHabit({
         habitId,
         localDateString,
@@ -180,14 +206,19 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
 
       if ("error" in result) {
         console.error("Error tracking habit:", result.error);
+        // Revert the optimistic update if there's an error
+        fetchCompletedHabits();
       } else {
         console.log("Habit tracked successfully:", result.trackedHabit);
-        fetchCompletedHabits();
+        // The UI is already updated, so we don't need to do anything here
       }
     } catch (error) {
       console.error("Error tracking habit:", error);
+      // Revert the optimistic update if there's an error
+      fetchCompletedHabits();
     }
   };
+
 
   const renderHabitList = (filteredHabits: any, itemClassName = "") => {
     const sortedHabits = filteredHabits.sort((a: any, b: any) => {
@@ -206,24 +237,25 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
             } ${itemClassName}`}
           >
             <div className="flex flex-col">
-              <span
-                onClick={() => onHabitSelect(habit)}
-                className="hover:cursor-pointer"
-              >
-                {habit.title}
-              </span>
-              <span className="m-1 text-sm text-gray-500">
-                {habit.environment}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              {habit.status === HabitStatus.CURRENT && (
-                <button
-                  onClick={() =>
-                    handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)
-                  }
-                  className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
-                >
+        <span
+          onClick={() => onHabitSelect(habit)}
+          className="hover:cursor-pointer"
+        >
+          {habit.title}
+        </span>
+        <span className="m-1 text-sm text-gray-500">
+          {habit.environment}
+        </span>
+      </div>
+      <div className="flex items-center space-x-2">
+        {habit.status === HabitStatus.CURRENT && (
+          <button
+            onClick={() =>
+              handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)
+           
+            }
+            className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
+          >
                   <span className="mr-2">Done</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
