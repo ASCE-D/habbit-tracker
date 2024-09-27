@@ -19,11 +19,7 @@ const Hero = () => {
                   Build Lasting Habits with Atomic Precision.
                 </h1>
                 <p className="mx-auto mb-9 max-w-[600px] text-base font-medium text-white sm:text-lg sm:leading-[1.44]">
-                  A comprehensive Next.js application designed for individuals
-                  committed to personal growth. It integrates cutting-edge habit
-                  formation techniques, interactive tools, and progress tracking
-                  to empower users in creating lasting positive changes in their
-                  lives.
+                Empower your personal growth with our habit tracker, featuring cutting-edge techniques, interactive tools, and progress tracking to help you create lasting positive changes in your life.
                 </p>
                 <ul className="mb-10 flex flex-wrap items-center justify-center gap-5">
                   <li>
