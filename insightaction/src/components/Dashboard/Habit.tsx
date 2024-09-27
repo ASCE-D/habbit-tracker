@@ -160,21 +160,18 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     return orderString ? JSON.parse(orderString) : [];
   };
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
   useEffect(() => {
-    const audio = new Audio("audio/thu-sep-26-2024_L8LUERVy.mp3");
-    console.log(audio)
-    audio.addEventListener("canplaythrough", () => {
-      audioRef.current = audio;
-    });
+    audioRef.current = new Audio("/audio/thu-sep-26-2024_L8LUERVy.mp3");
+
   }, []);
   
   const playCompletionSound = () => {
     if (audioRef.current) {
       audioRef.current.play().catch(error => console.error("Error playing sound:", error));
+
+
     }
   };
-
 
   const handleHabitCompletion = async (
     habitId: string,
@@ -194,7 +191,9 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
        // Play sound effect if the habit is being marked as completed
        if (status === HabitStatus.COMPLETED) {
         playCompletionSound();
+ 
       }
+  
 
     try {
       const result = await trackHabit({

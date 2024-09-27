@@ -66,7 +66,7 @@ const Signin = () => {
             >
               <div className="mb-10 text-center">
                 <Link href="/" className="mx-auto inline-block max-w-[160px]">
-                  <Image
+                  {/* <Image
                     src="/images/logo/logo.svg"
                     alt="logo"
                     width={140}
@@ -79,7 +79,7 @@ const Signin = () => {
                     width={140}
                     height={30}
                     className="hidden dark:block"
-                  />
+                  /> */}
                 </Link>
               </div>
 
