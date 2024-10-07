@@ -32,12 +32,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Habit, HabitStatus } from "@prisma/client";
-import { trackHabit, fetchHabits } from "@/actions/habit";
+import { trackHabit, fetchHabits, deleteHabit } from "@/actions/habit";
 import { getHabitsForDay } from "@/actions/habit/test";
 import PreLoader from "../Common/PreLoader";
 import { EditHabitModal } from "./edithabit";
 import dynamic from "next/dynamic";
 import SimpleHabitList from "./DragTest";
+import { useRouter } from "next/navigation";
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -57,6 +58,7 @@ interface HabitDayResult {
   success: boolean;
   habits: HabitWithStats[];
 }
+const MAX_HABITS = 5;
 
 const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const [date, setDate] = useState<Date>(new Date());
@@ -68,7 +70,8 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   const [isClient, setIsClient] = useState(false);
   const [sortingEnabled, setSortingEnabled] = useState(false);
   const [isStackModalOpen, setIsStackModalOpen] = useState(false);
-
+  const [habitCount, setHabitCount] = useState(0);
+  const router = useRouter();
   let preferenceOrder: HabitWithStats[] = [];
   const preferenceOrderString = localStorage.getItem("habitsOrder");
   if (preferenceOrderString !== null) {
@@ -145,7 +148,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
 
         return indexA - indexB;
       });
-
+      setHabitCount(sortedHabits.length);
       setHabits(sortedHabits);
       setIsLoading(false);
     } else {
@@ -218,6 +221,19 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
     }
   };
 
+
+  const handleDeleteHabit = async (habitId: string) => {
+    if (window.confirm("Are you sure you want to delete this habit?")) {
+      const result = await deleteHabit(habitId);
+      if (result.success) {
+        // Remove the habit from the local state
+        setHabits((prevHabits) => prevHabits.filter((habit) => habit.id !== habitId));
+        fetchCompletedHabits();
+      } else {
+        alert("Failed to delete habit. Please try again.");
+      }
+    }
+  };
 
   const renderHabitList = (filteredHabits: any, itemClassName = "") => {
     const sortedHabits = filteredHabits.sort((a: any, b: any) => {
@@ -357,6 +373,9 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
                   <DropdownMenuItem onClick={() => handleEditHabit(habit)}>
                     Edit
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDeleteHabit(habit.id)}>
+                    Delete
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -415,15 +434,24 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
             <ArrowDownNarrowWide className="h-6 w-6" />
           </Button>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primaryOrange px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-        >
-          <span className="pl-2">Set Habit</span>
-          <span className="px-2">+</span>
-        </button>
+        <div className="flex items-center space-x-4">
+          <span className="text-sm text-gray-400">
+            Habits: {habitCount}/{MAX_HABITS}
+          </span>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className={cn(
+              "text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primaryOrange px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+              habitCount >= MAX_HABITS && "opacity-50 cursor-not-allowed"
+            )}
+            disabled={habitCount >= MAX_HABITS}
+          >
+            <span className="pl-2">Set Habit</span>
+            <span className="px-2">+</span>
+          </button>
+        </div>
       </div>
-      {isModalOpen && (
+      {isModalOpen && habitCount < MAX_HABITS && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <AddHabitModal
             onClose={() => {
@@ -433,6 +461,30 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
           />
         </div>
       )}
+
+{/* 
+<div className="flex items-center space-x-4">
+          <span className="text-sm text-gray-400">
+            Habits: {habitCount}/{MAX_HABITS}
+          </span>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className={cn(
+              "text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primaryOrange px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+              habitCount >= MAX_HABITS && "opacity-50 cursor-not-allowed"
+            )}
+            disabled={habitCount >= MAX_HABITS}
+          >
+            <span className="pl-2">Set Habit</span>
+            <span className="px-2">+</span>
+          </button>
+        </div>
+      </div> */}
+
+
+
+
+
 
       {editingHabit && (
         <EditHabitModal

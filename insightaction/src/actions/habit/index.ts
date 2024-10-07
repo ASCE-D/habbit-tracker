@@ -70,6 +70,7 @@ interface CreateHabitData {
   goalCount?: number;
   frequency?: FrequencyType;
 }
+const MAX_HABITS = 5;
 
 export const createHabit = async (data: CreateHabitData) => {
   const session = await getServerSession(authOptions);
@@ -79,6 +80,7 @@ export const createHabit = async (data: CreateHabitData) => {
   }
 
   const userEmail = session.user.email;
+  
 
   try {
     // Find the user by email
@@ -88,6 +90,13 @@ export const createHabit = async (data: CreateHabitData) => {
 
     if (!user) {
       return { error: "User not found" };
+    }
+    const habitCount = await prisma.habit.count({
+      where: { userId:  user.id, isArchived: false },
+    });
+  
+    if (habitCount >= MAX_HABITS) {
+      return { error: "You have reached the maximum number of habits allowed (5)" };
     }
 
     // Check if the goal exists and belongs to the user
@@ -637,3 +646,18 @@ export const addInterested = async (data: any) => {
     return { error: error.message || "Failed to update user profile." };
   }
 };
+
+
+export async function deleteHabit(habitId: string) {
+  try {
+    await prisma.habit.delete({
+      where: { id: habitId },
+    });
+
+    revalidatePath("/journal/habits");
+    return { success: true, message: "Habit deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting habit:", error);
+    return { success: false, message: "Failed to delete habit" };
+  }
+}
