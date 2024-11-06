@@ -11,8 +11,8 @@ const SingleTeam = ({ team }: { team: TeamType }) => {
           <Image
             src={image}
             alt={name}
-            className="w-full rounded-full"
-            width={120}
+            className="w-full h-[128px] rounded-full object-cover"
+            width={100}
             height={120}
           />
           <span className="absolute bottom-0 left-0 -z-10 h-10 w-10 rounded-full bg-secondary opacity-0 transition-all group-hover:opacity-100"></span>

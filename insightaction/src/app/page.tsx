@@ -14,8 +14,14 @@ import { getAllPosts } from "@/utils/markdown";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://insightaction.pureapps.tech"),
+  metadataBase: new URL("https://insightaction.pureapps.tech/"),
   title: "Insightaction -  Build Lasting Habits with Atomic Precision.",
+  alternates: {
+    canonical: '/',
+    languages: {
+      'en-US': '/en-US',
+    },
+  },
   description:
     "A comprehensive Next.js application designed for individuals committed to personal growth. It integrates cutting-edge habit formation techniques, interactive tools, and progress tracking to empower users in creating lasting positive changes in their lives.",
   twitter: {
@@ -24,6 +30,19 @@ export const metadata: Metadata = {
   },
   openGraph: {
     images: "/opengraph-image.png",
+  },
+  robots: {
+    index: false,
+    follow: true,
+    nocache: true,
+    googleBot: {
+      index: true,
+      follow: false,
+      noimageindex: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
