@@ -60,7 +60,7 @@ interface HabitDayResult {
 }
 const MAX_HABITS = 5;
 
-const HabitList: React.FC<any> = ({ onHabitSelect }) => {
+const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
   const [date, setDate] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [habits, setHabits] = useState<HabitWithStats[]>([]);
@@ -399,7 +399,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect }) => {
   ) : (
     <div className="bg-dark min-h-screen space-y-6 p-4 text-white">
       <div className="flex items-center justify-between">
-        <div className="flex space-x-4">
+        <div className={`flex space-x-4 ${isMobile ? " ml-10" : ""}`}>
           <Popover>
             <PopoverTrigger asChild>
               <Button

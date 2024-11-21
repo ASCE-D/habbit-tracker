@@ -7,18 +7,22 @@ import {
   X,
   ArrowRight,
   ArrowUp,
-  Twitter,
   Share2,
-  CalendarIcon,
   Edit,
   MoreHorizontal,
   ListCollapse,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { getHabitPerformedDates } from "@/actions/habit";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { EditHabitModal } from "./edithabit";
 
 const StatCard = ({ title, value, subtext, icon: Icon, color }: any) => (
@@ -32,7 +36,7 @@ const StatCard = ({ title, value, subtext, icon: Icon, color }: any) => (
   </div>
 );
 
-export default function HabitDetails({ habit }: any) {
+export default function HabitDetails({ habit }: { habit: any | null }) {
   const [date, setDate] = useState(new Date());
   const [performedDates, setPerformedDates] = useState<Date[]>([]);
   const [isEditOpen, setIsEdit] = useState(false);
@@ -49,15 +53,13 @@ export default function HabitDetails({ habit }: any) {
     if (habit?.id) {
       getHabitPerformedDates(habit.id)
         .then((dates) => {
-          //@ts-ignore
-          setPerformedDates(dates.map((d: string) => new Date(d)));
+          setPerformedDates(dates.map((d: any) => new Date(d)));
         })
         .catch((error) => {
           console.error("Error fetching performed dates:", error);
         });
     }
   }, [habit]);
-
 
   function formatDate(date: Date) {
     if (!(date instanceof Date)) {
@@ -71,22 +73,32 @@ export default function HabitDetails({ habit }: any) {
     return `${day} ${month}, ${year}`;
   }
 
+  if (!habit) {
+    return (
+      <div className="flex h-full items-center justify-center text-white">
+        <p>Select a habit to view details</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-dark flex h-full flex-col p-4 text-white  overflow-y-auto">
+    <div className="bg-dark flex h-full flex-col overflow-y-auto p-4 text-white">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center">
           <ListCollapse className="mr-2" />
-          <h2 className="text-xl font-bold">
-            {habit ? habit.title : "Select Habit to view details... "}
-          </h2>
+          <h2 className="text-xl font-bold">{habit.title}</h2>
         </div>
         <div className="flex items-center space-x-2">
-          {habit?.startDate && (
-            <Select defaultValue={habit ? formatDate(habit.startDate) : ""}>
-              <label htmlFor="startDate" className="mr-2">
-                Start Date:
-              </label>
-              <option>{habit ? formatDate(habit.startDate) : ""}</option>
+          {habit.startDate && (
+            <Select defaultValue={formatDate(habit.startDate)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Start Date" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={formatDate(habit.startDate)}>
+                  {formatDate(habit.startDate)}
+                </SelectItem>
+              </SelectContent>
             </Select>
           )}
           <Button variant="ghost" size="icon" onClick={() => setIsEdit(true)}>
@@ -101,29 +113,28 @@ export default function HabitDetails({ habit }: any) {
         </div>
       </div>
       <div className="flex-1">
-        {" "}
-        <div className="space-y-4 ">
+        <div className="space-y-4">
           <StatCard
             title="HIGHEST STREAK"
-            value={habit ? habit.streak : "0 days"}
+            value={habit.streak}
             icon={Flame}
             color="text-orange-500"
           />
           <div className="grid grid-cols-2 gap-4">
             <StatCard
               title="COMPLETED"
-              value={habit ? habit.completed : "0 days"}
+              value={habit.completed}
               subtext="---"
               icon={Check}
               color="text-green-500"
             />
             <StatCard
               title="FAILED"
-              value={habit ? habit.failed : "0 days"}
+              value={habit.failed}
               subtext={
                 <span className="flex items-center">
-                  <ArrowUp size={12} className="mr-1" />{" "}
-                  {habit ? habit.failed : "0 days"}
+                  <ArrowUp size={12} className="mr-1" />
+                  {habit.failed}
                 </span>
               }
               icon={X}
@@ -131,25 +142,15 @@ export default function HabitDetails({ habit }: any) {
             />
             <StatCard
               title="SKIPPED"
-              value={habit ? habit.skipped : "0 days"}
+              value={habit.skipped}
               subtext="---"
               icon={ArrowRight}
               color="text-blue-500"
             />
-            <StatCard
-              title="TOTAL"
-              value={habit ? habit.total : "0 days"}
-              subtext="---"
-            />
+            <StatCard title="TOTAL" value={habit.total} subtext="---" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-lg border border-gray-600">
-              {/* <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(newDate) => newDate && setDate(newDate)}
-            /> */}
-
               <Calendar
                 mode="single"
                 selected={date}
@@ -167,20 +168,17 @@ export default function HabitDetails({ habit }: any) {
                 chance of achieving your goals and sticking to this habit.
               </p>
               <div className="flex items-center space-x-2">
-                {
-                  // <span className="text-blue-400">https://share.habitify.m...</span>
-                  <Button variant="ghost" size="icon">
-                    <Share2 size={18} />
-                  </Button>
-                }
+                <Button variant="ghost" size="icon">
+                  <Share2 size={18} />
+                </Button>
               </div>
             </div>
-            {isEditOpen && (
-              <EditHabitModal habit={habit} onClose={() => setIsEdit(false)} />
-            )}
           </div>
         </div>
       </div>
+      {isEditOpen && (
+        <EditHabitModal habit={habit} onClose={() => setIsEdit(false)} />
+      )}
     </div>
   );
 }
