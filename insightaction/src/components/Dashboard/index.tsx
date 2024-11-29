@@ -14,7 +14,7 @@ const HabitList = dynamic(() => import("@/components/Dashboard/Habit"), {
   ssr: false,
 });
 
-const HabitDashboardClient = ({ isMobile }: { isMobile: boolean }) => {
+const HabitDashboardClient = ({ isMobile }: { isMobile?: boolean }) => {
   const [selectedHabit, setSelectedHabit] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
