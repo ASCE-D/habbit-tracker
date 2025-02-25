@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!)
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
   admin.initializeApp({
     //@ts-ignore
     credential: admin.credential.cert(serviceAccount),
@@ -13,20 +13,25 @@ if (!admin.apps.length) {
 
 export async function GET(request: NextRequest) {
   console.log("Notification function triggered");
-//{ title: 'Test Notification', body: 'This is a test notification' }  { link: '/journal/habits' }
-const title = 'Reminder'
-const message = 'hey did we forget to update tracker or wot!! '
-const link = '/journal/habits'
+  //{ title: 'Test Notification', body: 'This is a test notification' }  { link: '/journal/habits' }
+  const title = "Reminder";
+  const message = "hey did we forget to update tracker or wot!! ";
+  const link = "/journal/habits";
   try {
     // Fetch all user tokens from Firestore
-    const usersSnapshot = await admin.firestore().collection('users')
-    .where('token', '!=', null) 
-    .get(); 
-    const tokens = usersSnapshot.docs.map(doc => doc.data().token)
-    console.log(tokens)
+    const usersSnapshot = await admin
+      .firestore()
+      .collection("users")
+      .where("token", "!=", null)
+      .get();
+    const tokens = usersSnapshot.docs.map((doc) => doc.data().token);
+    console.log(tokens);
     console.log("Fetched user tokens:", usersSnapshot.size);
     if (tokens.length === 0) {
-      return NextResponse.json({ success: false, message: "No valid tokens found" });
+      return NextResponse.json({
+        success: false,
+        message: "No valid tokens found",
+      });
     }
 
     const payload: MulticastMessage = {
@@ -35,18 +40,17 @@ const link = '/journal/habits'
         title: title,
         body: message,
       },
-      webpush: link ? {
-        fcmOptions: {
-          link,
-        },
-      } : undefined,
+      webpush: link
+        ? {
+            fcmOptions: {
+              link,
+            },
+          }
+        : undefined,
     };
-// console.log(payload)
+    // console.log(payload)
     // Send notifications to all tokens
-    const responses = await admin.messaging().sendEachForMulticast(
-    
-      payload
-    );
+    const responses = await admin.messaging().sendEachForMulticast(payload);
 
     // console.log(`${responses.successCount} notifications sent successfully`);
 
@@ -60,13 +64,15 @@ const link = '/journal/habits'
     //   console.log('List of tokens that caused failures: ' + failedTokens);
     // }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: `${responses.successCount} notifications sent, ${responses.failureCount} failed. ${payload}` 
+    return NextResponse.json({
+      success: true,
+      message: `${responses.successCount} notifications sent, ${responses.failureCount} failed. ${payload}`,
     });
-
   } catch (error) {
     console.error("Error sending notifications:", error);
-    return NextResponse.json({ success: false, message: "Error sending notifications" });
+    return NextResponse.json({
+      success: false,
+      message: "Error sending notifications",
+    });
   }
 }

@@ -7,6 +7,7 @@ import {
   Habit,
   HabitStatus,
   HabitTracker,
+  Todo,
 } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/auth";
@@ -82,9 +83,7 @@ export const getHabitsForDay = async (
   }
 };
 
-export const getHabitById = async (
-  id: string
-) => {
+export const getHabitById = async (id: string) => {
   try {
     const habit = await prisma.habit.findFirst({
       where: {
@@ -224,4 +223,67 @@ function getCount(trackedDays: HabitTracker[]) {
   });
 
   return { completed, skipped, failed, total: trackedDays.length };
+}
+
+export const addTodo = async (data: Todo) => {
+  const session = await getServerSession();
+
+  if (!session?.user?.email) {
+    return { error: "Unauthorized or insufficient permissions" };
+  }
+
+  try {
+    const todo = await prisma.todo.create({ data });
+    return { success: true, todo };
+  } catch (error: any) {
+    return { error: error.message || "Failed to create " };
+  }
+};
+
+export const deleteTodo = async (id: string) => {
+  try {
+    const todo = await prisma.todo.delete({ where: { id } });
+    return { success: true, todo };
+  } catch (error: any) {
+    return { error: error.message || "Failed to delete todo" };
+  }
+};
+
+export const updateTodo = async (id: string, data: Todo) => {
+  try {
+    const todo = await prisma.todo.update({ where: { id }, data });
+    return { success: true, todo };
+  } catch (error: any) {
+    return { error: error.message || "Failed to update todo" };
+  }
+};
+
+export const getTodos = async () => {
+  try {
+    const todos = await prisma.todo.findMany();
+    return { success: true, todos };
+  } catch (error: any) {
+    return { error: error.message || "Failed to fetch todos" };
+  }
+};
+
+export const getTodoById = async (id: string) => {
+  try {
+    const todo = await prisma.todo.findFirst({ where: { id } });
+    return { success: true, todo };
+  } catch (error: any) {
+    return { error: error.message || "Failed to fetch todo" };
+  }
+};
+
+export const markTodo = async (id: string) => {
+  try {
+    const todo = await prisma.todo.update({
+      where: { id },
+      data: { isCompleted: true },
+    });
+    return { success: true, todo };
+  } catch (error: any) {
+    return { error: error.message || "Failed to mark todo" };
+  }
 }

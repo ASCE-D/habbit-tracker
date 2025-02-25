@@ -2,7 +2,13 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -31,14 +37,21 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Habit, HabitStatus } from "@prisma/client";
+import { Habit, HabitStatus, Todo } from "@prisma/client";
 import { trackHabit, fetchHabits, deleteHabit } from "@/actions/habit";
-import { getHabitsForDay } from "@/actions/habit/test";
+import {
+  getHabitsForDay,
+  getTodos,
+  markTodo,
+  updateTodo,
+} from "@/actions/habit/test";
 import PreLoader from "../Common/PreLoader";
 import { EditHabitModal } from "./edithabit";
 import dynamic from "next/dynamic";
 import SimpleHabitList from "./DragTest";
 import { useRouter } from "next/navigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -71,6 +84,9 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
   const [sortingEnabled, setSortingEnabled] = useState(false);
   const [isStackModalOpen, setIsStackModalOpen] = useState(false);
   const [habitCount, setHabitCount] = useState(0);
+  const [activeTab, setActiveTab] = useState("habits");
+  const [todos, setTodos] = useState<Todo[]>([]);
+
   const router = useRouter();
   let preferenceOrder: HabitWithStats[] = [];
   const preferenceOrderString = localStorage.getItem("habitsOrder");
@@ -112,17 +128,37 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     }
   };
 
+  const handleTodoComplete = async (todoId: string) => {
+    console.log("Todo completed:", todoId);
+    const res = await markTodo(todoId);
+    if (res.success) {
+      toast("Todo marked as completed");
+      fetchTodos();
+    }
+  };
+
   useEffect(() => {
     setIsClient(true);
   }, [date]);
 
   useEffect(() => {
     fetchCompletedHabits();
+    fetchTodos();
   }, [date]);
 
   const handleEditHabit = (habit: Habit) => {
     setEditingHabit(habit);
   };
+
+  const fetchTodos = async () => {
+    const res = await getTodos();
+
+    if (res.success) {
+      console.log(res.todos);
+      setTodos(res.todos);
+    }
+  };
+
   const fetchCompletedHabits = async () => {
     setIsLoading(true);
 
@@ -165,14 +201,13 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
     audioRef.current = new Audio("/audio/thu-sep-26-2024_L8LUERVy.mp3");
-
   }, []);
-  
+
   const playCompletionSound = () => {
     if (audioRef.current) {
-      audioRef.current.play().catch(error => console.error("Error playing sound:", error));
-
-
+      audioRef.current
+        .play()
+        .catch((error) => console.error("Error playing sound:", error));
     }
   };
 
@@ -184,19 +219,17 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     partial = false,
   ) => {
     const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-    
+
     // Optimistically update the UI
     setHabits((prevHabits) =>
       prevHabits.map((habit) =>
-        habit.id === habitId ? { ...habit, status } : habit
-      )
+        habit.id === habitId ? { ...habit, status } : habit,
+      ),
     );
-       // Play sound effect if the habit is being marked as completed
-       if (status === HabitStatus.COMPLETED) {
-        playCompletionSound();
- 
-      }
-  
+    // Play sound effect if the habit is being marked as completed
+    if (status === HabitStatus.COMPLETED) {
+      playCompletionSound();
+    }
 
     try {
       const result = await trackHabit({
@@ -221,13 +254,14 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     }
   };
 
-
   const handleDeleteHabit = async (habitId: string) => {
     if (window.confirm("Are you sure you want to delete this habit?")) {
       const result = await deleteHabit(habitId);
       if (result.success) {
         // Remove the habit from the local state
-        setHabits((prevHabits) => prevHabits.filter((habit) => habit.id !== habitId));
+        setHabits((prevHabits) =>
+          prevHabits.filter((habit) => habit.id !== habitId),
+        );
         fetchCompletedHabits();
       } else {
         alert("Failed to delete habit. Please try again.");
@@ -252,25 +286,24 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
             } ${itemClassName}`}
           >
             <div className="flex flex-col">
-        <span
-          onClick={() => onHabitSelect(habit)}
-          className="hover:cursor-pointer"
-        >
-          {habit.title}
-        </span>
-        <span className="m-1 text-sm text-gray-500">
-          {habit.environment}
-        </span>
-      </div>
-      <div className="flex items-center space-x-2">
-        {habit.status === HabitStatus.CURRENT && (
-          <button
-            onClick={() =>
-              handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)
-           
-            }
-            className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
-          >
+              <span
+                onClick={() => onHabitSelect(habit)}
+                className="hover:cursor-pointer"
+              >
+                {habit.title}
+              </span>
+              <span className="m-1 text-sm text-gray-500">
+                {habit.environment}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              {habit.status === HabitStatus.CURRENT && (
+                <button
+                  onClick={() =>
+                    handleHabitCompletion(habit.id, HabitStatus.COMPLETED, true)
+                  }
+                  className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
+                >
                   <span className="mr-2">Done</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -385,6 +418,77 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     );
   };
 
+  const renderTodoList = () => (
+    <div className="space-y-0">
+      {todos.map((todo, index) => (
+        <div
+          key={todo.id}
+          className={`flex items-center justify-between p-4 ${
+            index !== todos.length - 1 ? "border-b border-gray-700" : ""
+          }`}
+        >
+          <div className="flex flex-col">
+            <span className={`${todo.isCompleted ? "line-through" : ""}`}>
+              {todo.title}
+            </span>
+            {todo.description && (
+              <span className="m-1 text-sm text-gray-500">
+                {todo.description}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center space-x-2">
+            {!todo.isCompleted && (
+              <button
+                onClick={() => handleTodoComplete(todo.id)}
+                className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
+              >
+                <span className="mr-2">Done</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              {/* <DropdownMenuContent align="end">
+                  {todo.isCompleted ? (
+                    <DropdownMenuItem
+                      onClick={() => handleTodoCompletion(todo.id)}
+                    >
+                      Undo
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem
+                      onClick={() => handleTodoCompletion(todo.id)}
+                    >
+                      Complete
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => handleDeleteTodo(todo.id)}>
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent> */}
+            </DropdownMenu>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   const isToday = (someDate: Date) => {
     const today = new Date();
     return (
@@ -422,7 +526,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
               />
             </PopoverContent>
           </Popover>
-          <Button
+          {/* <Button
             variant={"outline"}
             className={cn(
               "rounded-full bg-gray-700 p-4",
@@ -432,9 +536,10 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
             onClick={() => setSortingEnabled(!sortingEnabled)}
           >
             <ArrowDownNarrowWide className="h-6 w-6" />
-          </Button>
+          </Button> */}
         </div>
-        <div className="flex items-center space-x-4">
+
+        <div className="flex items-center space-x-4 ">
           <span className="text-sm text-gray-400">
             Habits: {habitCount}/{MAX_HABITS}
           </span>
@@ -442,7 +547,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
             onClick={() => setIsModalOpen(true)}
             className={cn(
               "text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primaryOrange px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-              habitCount >= MAX_HABITS && "opacity-50 cursor-not-allowed"
+              habitCount >= MAX_HABITS && "cursor-not-allowed opacity-50",
             )}
             disabled={habitCount >= MAX_HABITS}
           >
@@ -462,7 +567,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
         </div>
       )}
 
-{/* 
+      {/* 
 <div className="flex items-center space-x-4">
           <span className="text-sm text-gray-400">
             Habits: {habitCount}/{MAX_HABITS}
@@ -481,104 +586,121 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
         </div>
       </div> */}
 
-
-
-
-
-
       {editingHabit && (
         <EditHabitModal
           habit={editingHabit}
           onClose={() => setEditingHabit(null)}
         />
       )}
-
-      {/* Current Habits */}
-      {renderHabitList(
-        habits.filter((habit: any) => habit.status === HabitStatus.CURRENT),
-      )}
-
-      {/* Completed Habits */}
-      {habits.filter((habit: any) => habit.status === "COMPLETED").length >
-        0 && (
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="completed-habits">
-            <AccordionTrigger>Completed Habits</AccordionTrigger>
-            <AccordionContent>
-              {habits
-                .filter((habit: any) => habit.status === "COMPLETED")
-                .map((habit: any, index: any, filteredHabits: any) => (
-                  <div
-                    key={habit.id}
-                    className={`flex items-center justify-between p-4 ${
-                      index !== filteredHabits.length - 1
-                        ? "border-b border-gray-700"
-                        : ""
-                    }`}
-                  >
-                    <span
-                      className="line-through hover:cursor-pointer"
-                      onClick={() => onHabitSelect(habit)}
-                    >
-                      {habit.title}
-                    </span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleHabitCompletion(
-                              habit.id,
-                              HabitStatus.CURRENT,
-                              false,
-                            )
-                          }
+      <Tabs
+        defaultValue="habits"
+        className="w-full"
+        onValueChange={setActiveTab}
+      >
+        <TabsList className="mb-4 grid w-full grid-cols-2">
+          <TabsTrigger value="habits">Habits</TabsTrigger>
+          <TabsTrigger value="todos">Todos</TabsTrigger>
+        </TabsList>
+        <TabsContent value="habits" className="mt-0">
+          {" "}
+          {/* Current Habits */}
+          {renderHabitList(
+            habits.filter((habit: any) => habit.status === HabitStatus.CURRENT),
+          )}
+          {/* Completed Habits */}
+          {habits.filter((habit: any) => habit.status === "COMPLETED").length >
+            0 && (
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="completed-habits">
+                <AccordionTrigger>Completed Habits</AccordionTrigger>
+                <AccordionContent>
+                  {habits
+                    .filter((habit: any) => habit.status === "COMPLETED")
+                    .map((habit: any, index: any, filteredHabits: any) => (
+                      <div
+                        key={habit.id}
+                        className={`flex items-center justify-between p-4 ${
+                          index !== filteredHabits.length - 1
+                            ? "border-b border-gray-700"
+                            : ""
+                        }`}
+                      >
+                        <span
+                          className="line-through hover:cursor-pointer"
+                          onClick={() => onHabitSelect(habit)}
                         >
-                          Undo
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>Show streak</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                ))}
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      )}
-
-      {/* Skipped Habits */}
-      {habits.filter((habit: any) => habit.status === "SKIPPED").length > 0 && (
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="skipped-habits">
-            <AccordionTrigger>Skipped Habits</AccordionTrigger>
-            <AccordionContent>
-              {renderHabitList(
-                habits.filter((habit: any) => habit.status === "SKIPPED"),
-                "text-gray-400",
-              )}
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      )}
-
-      {/* Failed Habits */}
-      {habits.filter((habit: any) => habit.status === "FAILED").length > 0 && (
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="failed-habits">
-            <AccordionTrigger>Failed Habits</AccordionTrigger>
-            <AccordionContent>
-              {renderHabitList(
-                habits.filter((habit: any) => habit.status === "FAILED"),
-                "text-red-500",
-              )}
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      )}
+                          {habit.title}
+                        </span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleHabitCompletion(
+                                  habit.id,
+                                  HabitStatus.CURRENT,
+                                  false,
+                                )
+                              }
+                            >
+                              Undo
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>Show streak</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    ))}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
+          {/* Skipped Habits */}
+          {habits.filter((habit: any) => habit.status === "SKIPPED").length >
+            0 && (
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="skipped-habits">
+                <AccordionTrigger>Skipped Habits</AccordionTrigger>
+                <AccordionContent>
+                  {renderHabitList(
+                    habits.filter((habit: any) => habit.status === "SKIPPED"),
+                    "text-gray-400",
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
+          {/* Failed Habits */}
+          {habits.filter((habit: any) => habit.status === "FAILED").length >
+            0 && (
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="failed-habits">
+                <AccordionTrigger>Failed Habits</AccordionTrigger>
+                <AccordionContent>
+                  {renderHabitList(
+                    habits.filter((habit: any) => habit.status === "FAILED"),
+                    "text-red-500",
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
+        </TabsContent>
+        <TabsContent value="todos" className="mt-0">
+          <div className=" flex justify-end">
+            {/* <Button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-primaryOrange"
+            >
+              Add Todo +
+            </Button> */}
+          </div>
+          {renderTodoList()}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

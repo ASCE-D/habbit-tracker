@@ -53,6 +53,7 @@ model User {
   passwordResetTokenExp DateTime?
   accounts              Account[]
   sessions              Session[]
+  Todo                  Todo[]
 }
 
 model VerificationToken {
@@ -172,4 +173,13 @@ model Interested {
   id      String @id @default(uuid())
   email   String
   feature String
+}
+
+model Todo {
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+  userId      String
+  user        User    @relation(fields: [userId], references: [id])
+  isCompleted Boolean @default(false)
 }
