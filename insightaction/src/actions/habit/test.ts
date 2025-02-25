@@ -250,6 +250,11 @@ export const deleteTodo = async (id: string) => {
 };
 
 export const updateTodo = async (id: string, data: Todo) => {
+  const session = await getServerSession();
+
+  if (!session?.user?.email) {
+    return { error: "Unauthorized or insufficient permissions" };
+  }
   try {
     const todo = await prisma.todo.update({ where: { id }, data });
     return { success: true, todo };
@@ -259,8 +264,18 @@ export const updateTodo = async (id: string, data: Todo) => {
 };
 
 export const getTodos = async () => {
+  const session = await getServerSession();
+
+  if (!session?.user?.email) {
+    return { error: "Unauthorized or insufficient permissions" };
+  }
+
   try {
-    const todos = await prisma.todo.findMany();
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    const todos = await prisma.todo.findMany({ where: { id: user?.id } });
     return { success: true, todos };
   } catch (error: any) {
     return { error: error.message || "Failed to fetch todos" };
@@ -286,4 +301,4 @@ export const markTodo = async (id: string) => {
   } catch (error: any) {
     return { error: error.message || "Failed to mark todo" };
   }
-}
+};
