@@ -5,7 +5,7 @@ import { prisma } from "../../utils/prismaDB";
 import { authOptions } from "@/utils/auth";
 import { revalidatePath } from "next/cache";
 import { HabitStatus, Habit, FrequencyType } from "@prisma/client";
-// import { sendNotification } from '../../lib/firebase-admin';
+// import { sendNotification } from '../../lib/firebase-amin';
 
 export const createGoal = async (data: {
   title: string;
