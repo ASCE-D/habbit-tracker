@@ -7,6 +7,7 @@ import {
   Habit,
   HabitStatus,
   HabitTracker,
+  Prisma,
   Todo,
 } from "@prisma/client";
 import { getServerSession } from "next-auth";
@@ -225,15 +226,33 @@ function getCount(trackedDays: HabitTracker[]) {
   return { completed, skipped, failed, total: trackedDays.length };
 }
 
-export const addTodo = async (data: Todo) => {
+export const addTodo = async (data: Partial<Todo>) => {
   const session = await getServerSession();
 
   if (!session?.user?.email) {
     return { error: "Unauthorized or insufficient permissions" };
   }
 
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  });
+
+  if (!user?.id) {
+    return { error: "User not found" };
+  }
+  const dataToAdd: Prisma.TodoCreateInput = {
+    ...data,
+    title: data.title || "",
+    user: {
+      connect: {
+        id: user.id as string,
+      },
+    },
+    isCompleted: false,
+  };
+
   try {
-    const todo = await prisma.todo.create({ data });
+    const todo = await prisma.todo.create({ data: dataToAdd });
     return { success: true, todo };
   } catch (error: any) {
     return { error: error.message || "Failed to create " };
@@ -275,7 +294,8 @@ export const getTodos = async () => {
       where: { email: session.user.email },
     });
 
-    const todos = await prisma.todo.findMany({ where: { id: user?.id } });
+    const todos = await prisma.todo.findMany({ where: { userId: user?.id } });
+
     return { success: true, todos };
   } catch (error: any) {
     return { error: error.message || "Failed to fetch todos" };

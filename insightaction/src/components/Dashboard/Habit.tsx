@@ -40,6 +40,7 @@ import {
 import { Habit, HabitStatus, Todo } from "@prisma/client";
 import { trackHabit, fetchHabits, deleteHabit } from "@/actions/habit";
 import {
+  addTodo,
   getHabitsForDay,
   getTodos,
   markTodo,
@@ -52,6 +53,7 @@ import SimpleHabitList from "./DragTest";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { AddTodoModal } from "./AddTodo";
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -86,6 +88,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
   const [habitCount, setHabitCount] = useState(0);
   const [activeTab, setActiveTab] = useState("habits");
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [addTodoModalOpen, setAddTodoModalOpen] = useState(false);
 
   const router = useRouter();
   let preferenceOrder: HabitWithStats[] = [];
@@ -152,6 +155,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
 
   const fetchTodos = async () => {
     const res = await getTodos();
+    console.log(res);
 
     if (res.success) {
       console.log(res.todos);
@@ -498,76 +502,43 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     );
   };
 
+  const handleAddTodo = async (data: Partial<Todo>) => {
+    const res = await addTodo(data);
+    if (res.success) {
+      toast.success("Todo added successfully");
+      fetchTodos();
+    } else {
+      toast.error("failed to add todo");
+      console.error("Failed to add todo:", res.error);
+    }
+  };
+
   return isLoading ? (
     <PreLoader />
   ) : (
     <div className="bg-dark min-h-screen space-y-6 p-4 text-white">
-      <div className="flex items-center justify-between">
-        <div className={`flex space-x-4 ${isMobile ? " ml-10" : ""}`}>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "rounded-full bg-gray-700 p-4",
-                  !date && "text-muted-foreground",
-                )}
-              >
-                {isToday(date) ? "Today" : date.toLocaleDateString()}{" "}
-                <CalendarIcon className="ml-2 h-4 w-4 text-primaryOrange" />{" "}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={(newDate) => newDate && setDate(newDate)}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          {/* <Button
-            variant={"outline"}
-            className={cn(
-              "rounded-full bg-gray-700 p-4",
-              !date && "text-muted-foreground",
-              sortingEnabled && "bg-primaryOrange",
-            )}
-            onClick={() => setSortingEnabled(!sortingEnabled)}
-          >
-            <ArrowDownNarrowWide className="h-6 w-6" />
-          </Button> */}
-        </div>
+      <Tabs
+        defaultValue="habits"
+        className="w-full"
+        onValueChange={setActiveTab}
+      >
+        <TabsList className="mb-4 grid w-full grid-cols-2">
+          <TabsTrigger value="habits">Habits</TabsTrigger>
+          <TabsTrigger value="todos">Todos</TabsTrigger>
+        </TabsList>
 
-        <div className="flex items-center space-x-4 ">
-          <span className="text-sm text-gray-400">
-            Habits: {habitCount}/{MAX_HABITS}
-          </span>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className={cn(
-              "text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primaryOrange px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-              habitCount >= MAX_HABITS && "cursor-not-allowed opacity-50",
-            )}
-            disabled={habitCount >= MAX_HABITS}
-          >
-            <span className="pl-2">Set Habit</span>
-            <span className="px-2">+</span>
-          </button>
-        </div>
-      </div>
-      {isModalOpen && habitCount < MAX_HABITS && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <AddHabitModal
-            onClose={() => {
-              setIsModalOpen(false);
-              fetchCompletedHabits();
-            }}
-          />
-        </div>
-      )}
+        {isModalOpen && habitCount < MAX_HABITS && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <AddHabitModal
+              onClose={() => {
+                setIsModalOpen(false);
+                fetchCompletedHabits();
+              }}
+            />
+          </div>
+        )}
 
-      {/* 
+        {/* 
 <div className="flex items-center space-x-4">
           <span className="text-sm text-gray-400">
             Habits: {habitCount}/{MAX_HABITS}
@@ -586,23 +557,78 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
         </div>
       </div> */}
 
-      {editingHabit && (
-        <EditHabitModal
-          habit={editingHabit}
-          onClose={() => setEditingHabit(null)}
-        />
-      )}
-      <Tabs
-        defaultValue="habits"
-        className="w-full"
-        onValueChange={setActiveTab}
-      >
-        <TabsList className="mb-4 grid w-full grid-cols-2">
-          <TabsTrigger value="habits">Habits</TabsTrigger>
-          <TabsTrigger value="todos">Todos</TabsTrigger>
-        </TabsList>
+        {editingHabit && (
+          <EditHabitModal
+            habit={editingHabit}
+            onClose={() => setEditingHabit(null)}
+          />
+        )}
+
+        {addTodoModalOpen && (
+          <AddTodoModal
+            onClose={() => {
+              setAddTodoModalOpen(false);
+            }}
+            onAddTodo={(data) => handleAddTodo(data)}
+          />
+        )}
+
         <TabsContent value="habits" className="mt-0">
           {" "}
+          <div className="flex items-center justify-between">
+            <div className={`flex space-x-4 ${isMobile ? " ml-10" : ""}`}>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "rounded-full bg-gray-700 p-4",
+                      !date && "text-muted-foreground",
+                    )}
+                  >
+                    {isToday(date) ? "Today" : date.toLocaleDateString()}{" "}
+                    <CalendarIcon className="ml-2 h-4 w-4 text-primaryOrange" />{" "}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(newDate) => newDate && setDate(newDate)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              {/* <Button
+            variant={"outline"}
+            className={cn(
+              "rounded-full bg-gray-700 p-4",
+              !date && "text-muted-foreground",
+              sortingEnabled && "bg-primaryOrange",
+            )}
+            onClick={() => setSortingEnabled(!sortingEnabled)}
+          >
+            <ArrowDownNarrowWide className="h-6 w-6" />
+          </Button> */}
+            </div>
+
+            <div className="flex items-center space-x-4 ">
+              <span className="text-sm text-gray-400">
+                Habits: {habitCount}/{MAX_HABITS}
+              </span>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className={cn(
+                  "text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primaryOrange px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+                  habitCount >= MAX_HABITS && "cursor-not-allowed opacity-50",
+                )}
+                disabled={habitCount >= MAX_HABITS}
+              >
+                <span className="pl-2">Set Habit</span>
+                <span className="px-2">+</span>
+              </button>
+            </div>
+          </div>
           {/* Current Habits */}
           {renderHabitList(
             habits.filter((habit: any) => habit.status === HabitStatus.CURRENT),
@@ -691,12 +717,12 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
         </TabsContent>
         <TabsContent value="todos" className="mt-0">
           <div className=" flex justify-end">
-            {/* <Button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-primaryOrange"
+            <Button
+              onClick={() => setAddTodoModalOpen(true)}
+              className="text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primaryOrange px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
             >
               Add Todo +
-            </Button> */}
+            </Button>
           </div>
           {renderTodoList()}
         </TabsContent>

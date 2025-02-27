@@ -176,10 +176,17 @@ model Interested {
 }
 
 model Todo {
-  id          String  @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
   description String?
   userId      String
-  user        User    @relation(fields: [userId], references: [id])
-  isCompleted Boolean @default(false)
+  priority    priority?
+  user        User      @relation(fields: [userId], references: [id])
+  isCompleted Boolean   @default(false)
+}
+
+enum priority {
+  p1
+  p2
+  p3
 }
