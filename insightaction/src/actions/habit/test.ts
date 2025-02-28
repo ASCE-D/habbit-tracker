@@ -294,7 +294,10 @@ export const getTodos = async () => {
       where: { email: session.user.email },
     });
 
-    const todos = await prisma.todo.findMany({ where: { userId: user?.id } });
+    const todos = await prisma.todo.findMany({
+      where: { userId: user?.id },
+      orderBy: { priority: "asc" },
+    });
 
     return { success: true, todos };
   } catch (error: any) {

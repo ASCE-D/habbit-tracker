@@ -25,6 +25,7 @@ import {
 import {
   ArrowDownNarrowWide,
   CalendarIcon,
+  Flag,
   GripVertical,
   MoreVertical,
   Search,
@@ -422,76 +423,126 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     );
   };
 
-  const renderTodoList = () => (
-    <div className="space-y-0">
-      {todos.map((todo, index) => (
-        <div
-          key={todo.id}
-          className={`flex items-center justify-between p-4 ${
-            index !== todos.length - 1 ? "border-b border-gray-700" : ""
-          }`}
-        >
-          <div className="flex flex-col">
+const renderTodoList = () => {
+  // Split todos into completed and non-completed
+  const completedTodos = todos.filter((todo) => todo.isCompleted);
+  const activeTodos = todos.filter((todo) => !todo.isCompleted);
+
+  // Function to render a todo item with proper priority styling
+  // @ts-ignore
+  const renderTodoItem = (todo, index, list) => {
+    // Priority flag colors
+    const priorityColors = {
+      p1: "text-red-500",
+      p2: "text-amber-500",
+      p3: "text-green-500",
+    };
+
+    // Border style for list items
+    const borderClass =
+      index !== list.length - 1 ? "border-b border-gray-700" : "";
+
+    return (
+      <div
+        key={todo.id}
+        className={`flex items-center justify-between p-4 ${borderClass}`}
+      >
+        <div className="flex flex-col">
+          <div className="flex items-center">
+            <Flag className={`mr-2 h-4 w-4 ${priorityColors[todo.priority as keyof typeof priorityColors]}`} />
             <span className={`${todo.isCompleted ? "line-through" : ""}`}>
               {todo.title}
             </span>
-            {todo.description && (
-              <span className="m-1 text-sm text-gray-500">
-                {todo.description}
-              </span>
-            )}
           </div>
-          <div className="flex items-center space-x-2">
-            {!todo.isCompleted && (
-              <button
-                onClick={() => handleTodoComplete(todo.id)}
-                className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
-              >
-                <span className="mr-2">Done</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              {/* <DropdownMenuContent align="end">
-                  {todo.isCompleted ? (
-                    <DropdownMenuItem
-                      onClick={() => handleTodoCompletion(todo.id)}
-                    >
-                      Undo
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem
-                      onClick={() => handleTodoCompletion(todo.id)}
-                    >
-                      Complete
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem onClick={() => handleDeleteTodo(todo.id)}>
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent> */}
-            </DropdownMenu>
-          </div>
+          {todo.description && (
+            <span className="m-1 ml-6 text-sm text-gray-500">
+              {todo.description}
+            </span>
+          )}
         </div>
-      ))}
+        <div className="flex items-center space-x-2">
+          {!todo.isCompleted && (
+            <button
+              onClick={() => handleTodoComplete(todo.id)}
+              className="flex items-center rounded bg-black px-3 py-1 transition-colors duration-200 hover:bg-done"
+            >
+              <span className="mr-2">Done</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            {/* <DropdownMenuContent align="end">
+              {todo.isCompleted ? (
+                <DropdownMenuItem
+                  onClick={() => handleTodoCompletion(todo.id)}
+                >
+                  Undo
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={() => handleTodoCompletion(todo.id)}
+                >
+                  Complete
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => handleDeleteTodo(todo.id)}>
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent> */}
+          </DropdownMenu>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Active todos */}
+      <div className="space-y-0">
+        {activeTodos.map((todo, index) =>
+          renderTodoItem(todo, index, activeTodos),
+        )}
+      </div>
+
+      {/* Completed todos in an accordion */}
+      {completedTodos.length > 0 && (
+        <Accordion type="single" collapsible>
+          <AccordionItem
+            value="completed-todos"
+            className="border-t border-gray-700"
+          >
+            <AccordionTrigger className="px-4 py-3">
+              Completed Todos ({completedTodos.length})
+            </AccordionTrigger>
+            <AccordionContent className="space-y-0 pt-0">
+              <div className="space-y-0">
+                {completedTodos.map((todo, index) =>
+                  renderTodoItem(todo, index, completedTodos),
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
     </div>
   );
+};
 
   const isToday = (someDate: Date) => {
     const today = new Date();
@@ -716,7 +767,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
           )}
         </TabsContent>
         <TabsContent value="todos" className="mt-0">
-          <div className=" flex justify-end">
+          <div className=" flex justify-end mb-4">
             <Button
               onClick={() => setAddTodoModalOpen(true)}
               className="text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primaryOrange px-2 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
