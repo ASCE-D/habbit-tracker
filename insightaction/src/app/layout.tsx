@@ -19,12 +19,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const pathname = usePathname(); // Use usePathname instead of useRouter
 
-  useEffect(() => {
-    setTimeout(() => setLoading(false), 1000);
-  }, []);
+  // useEffect(() => {
+  //   setTimeout(() => setLoading(false), 1000);
+  // }, []);
 
   // Check if the current route should bypass the layout
   const bypassRoutes = ["/journal/habits"]; // Add any other routes that should bypass the layout

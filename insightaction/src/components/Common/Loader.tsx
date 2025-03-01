@@ -1,10 +1,28 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-const Loader = () => {
+interface LoaderProps {
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}
+
+const Loader = ({ size = "md", className }: LoaderProps) => {
+  const sizeClasses = {
+    sm: "h-4 w-4 border-2",
+    md: "h-6 w-6 border-2",
+    lg: "h-8 w-8 border-3",
+  };
+
   return (
-    <span
-      className={`ml-1.5 h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent dark:border-t-transparent`}
-    ></span>
+    <div className={cn("flex items-center justify-center", className)}>
+      <div
+        className={cn(
+          "animate-spin rounded-full border-solid border-primaryOrange border-t-transparent",
+          sizeClasses[size],
+        )}
+        aria-label="Loading"
+      />
+    </div>
   );
 };
 

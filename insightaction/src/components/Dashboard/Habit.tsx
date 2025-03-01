@@ -56,6 +56,7 @@ import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { AddTodoModal } from "./AddTodo";
+import Loader from "../Common/Loader";
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -579,7 +580,11 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
   };
 
   return isLoading ? (
-    <PreLoader />
+    <div className="flex h-screen items-center justify-center">
+      {" "}
+      {/* h-screen makes it full viewport height */}
+      <Loader />
+    </div>
   ) : (
     <div className="bg-dark min-h-screen space-y-6 p-4 text-white">
       <Tabs

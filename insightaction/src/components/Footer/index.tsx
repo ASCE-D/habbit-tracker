@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import SVGComponent from "../Common/SVGComponent";
 
 const Footer = () => {
   return (
@@ -12,22 +13,23 @@ const Footer = () => {
           <div className="w-full px-4 sm:w-1/2 md:w-1/2 lg:w-4/12 xl:w-3/12">
             <div className="mb-10 w-full">
               <Link href="/" className="mb-6 inline-block max-w-[160px]">
-                <Image
-                  src="/images/logo/logo-white.svg"
+                <SVGComponent />
+                {/* <Image
+                  src="/images/logo/logo.svg"
                   alt="logo"
                   width={140}
                   height={30}
                   className="max-w-full"
-                />
+                /> */}
               </Link>
-              <p className="mb-8 max-w-[270px] text-base text-gray-7">
+              <p className="text-gray-7 mb-8 max-w-[270px] text-base">
                 We help you create and master your atomic habits.
               </p>
               <div className="-mx-3 flex items-center">
                 <a
                   aria-label="social link"
                   href="/#"
-                  className="px-3 text-gray-7 hover:text-white"
+                  className="text-gray-7 px-3 hover:text-white"
                 >
                   <svg
                     width="22"
@@ -43,7 +45,7 @@ const Footer = () => {
                 <a
                   aria-label="social link"
                   href="/#"
-                  className="px-3 text-gray-7 hover:text-white"
+                  className="text-gray-7 px-3 hover:text-white"
                 >
                   <svg
                     width="22"
@@ -59,7 +61,7 @@ const Footer = () => {
                 <a
                   aria-label="social link"
                   href="/#"
-                  className="px-3 text-gray-7 hover:text-white"
+                  className="text-gray-7 px-3 hover:text-white"
                 >
                   <svg
                     width="22"
@@ -77,7 +79,7 @@ const Footer = () => {
                 <a
                   aria-label="social link"
                   href="/#"
-                  className="px-3 text-gray-7 hover:text-white"
+                  className="text-gray-7 px-3 hover:text-white"
                 >
                   <svg
                     width="22"
@@ -102,7 +104,7 @@ const Footer = () => {
                 <li>
                   <a
                     href="/#"
-                    className="mb-3 inline-block text-base text-gray-7 hover:text-primary"
+                    className="text-gray-7 hover:text-primary mb-3 inline-block text-base"
                   >
                     Home
                   </a>
@@ -110,7 +112,7 @@ const Footer = () => {
                 <li>
                   <a
                     href="/#"
-                    className="mb-3 inline-block text-base text-gray-7 hover:text-primary"
+                    className="text-gray-7 hover:text-primary mb-3 inline-block text-base"
                   >
                     Features
                   </a>
@@ -118,7 +120,7 @@ const Footer = () => {
                 <li>
                   <a
                     href="/#"
-                    className="mb-3 inline-block text-base text-gray-7 hover:text-primary"
+                    className="text-gray-7 hover:text-primary mb-3 inline-block text-base"
                   >
                     About
                   </a>
@@ -143,7 +145,7 @@ const Footer = () => {
                 <li>
                   <a
                     href="/#"
-                    className="mb-3 inline-block text-base text-gray-7 hover:text-primary"
+                    className="text-gray-7 hover:text-primary mb-3 inline-block text-base"
                   >
                     How it works
                   </a>
@@ -151,7 +153,7 @@ const Footer = () => {
                 <li>
                   <a
                     href="/#"
-                    className="mb-3 inline-block text-base text-gray-7 hover:text-primary"
+                    className="text-gray-7 hover:text-primary mb-3 inline-block text-base"
                   >
                     Privacy policy
                   </a>
@@ -159,7 +161,7 @@ const Footer = () => {
                 <li>
                   <a
                     href="/#"
-                    className="mb-3 inline-block text-base text-gray-7 hover:text-primary"
+                    className="text-gray-7 hover:text-primary mb-3 inline-block text-base"
                   >
                     Terms of Service
                   </a>
@@ -167,7 +169,7 @@ const Footer = () => {
                 <li>
                   <a
                     href="/#"
-                    className="mb-3 inline-block text-base text-gray-7 hover:text-primary"
+                    className="text-gray-7 hover:text-primary mb-3 inline-block text-base"
                   >
                     Refund policy
                   </a>
@@ -225,7 +227,7 @@ const Footer = () => {
                 <li>
                   <a
                     href="/#"
-                    className="mb-3 inline-block text-base text-gray-7 hover:text-primary"
+                    className="text-gray-7 hover:text-primary mb-3 inline-block text-base"
                   >
                     FAQ
                   </a>
@@ -233,7 +235,7 @@ const Footer = () => {
                 <li>
                   <a
                     href="/#"
-                    className="mb-3 inline-block text-base text-gray-7 hover:text-primary"
+                    className="text-gray-7 hover:text-primary mb-3 inline-block text-base"
                   >
                     Blogs
                   </a>
@@ -241,7 +243,7 @@ const Footer = () => {
                 <li>
                   <a
                     href="/#"
-                    className="mb-3 inline-block text-base text-gray-7 hover:text-primary"
+                    className="text-gray-7 hover:text-primary mb-3 inline-block text-base"
                   >
                     Support
                   </a>
@@ -249,7 +251,7 @@ const Footer = () => {
                 <li>
                   <a
                     href="/#"
-                    className="mb-3 inline-block text-base text-gray-7 hover:text-primary"
+                    className="text-gray-7 hover:text-primary mb-3 inline-block text-base"
                   >
                     About
                   </a>
@@ -268,19 +270,19 @@ const Footer = () => {
                 <div className="-mx-3 flex items-center justify-center md:justify-start">
                   <a
                     href="/#"
-                    className="px-3 text-base text-gray-7 hover:text-white hover:underline"
+                    className="text-gray-7 px-3 text-base hover:text-white hover:underline"
                   >
                     Privacy policy
                   </a>
                   <a
                     href="/#"
-                    className="px-3 text-base text-gray-7 hover:text-white hover:underline"
+                    className="text-gray-7 px-3 text-base hover:text-white hover:underline"
                   >
                     Legal notice
                   </a>
                   <a
                     href="/#"
-                    className="px-3 text-base text-gray-7 hover:text-white hover:underline"
+                    className="text-gray-7 px-3 text-base hover:text-white hover:underline"
                   >
                     Terms of service
                   </a>
@@ -289,7 +291,7 @@ const Footer = () => {
             </div>
             <div className="w-full px-12 md:w-1/3 lg:w-1/2">
               <div className="my-1 flex justify-center md:justify-end">
-                <p className="text-base text-gray-7">
+                <p className="text-gray-7 text-base">
                   Designed and Developed at{" "}
                   <a
                     href="https://deepeshgenani.vercel.app"

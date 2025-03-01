@@ -20,13 +20,16 @@ const Hero = () => {
                   Build Lasting Habits with Atomic Precision.
                 </h1>
                 <p className="mx-auto mb-9 max-w-[600px] text-base font-medium text-white sm:text-lg sm:leading-[1.44]">
-                Empower your personal growth with our habit tracker, featuring cutting-edge techniques, interactive tools, and progress tracking to help you create lasting positive changes in your life.
+                  Empower your personal growth with our habit tracker, featuring
+                  cutting-edge techniques, interactive tools, and progress
+                  tracking to help you create lasting positive changes in your
+                  life.
                 </p>
                 <ul className="mb-10 flex flex-wrap items-center justify-center gap-5">
                   <li>
                     <Link
                       href="/journal/habits"
-                      className="text-dark shadow-1 hover:bg-gray-2 inline-flex items-center justify-center rounded-md bg-primaryOrange hover:bg-primaryOrange/60 px-4 py-[14px] text-center text-base font-medium transition duration-300 ease-in-out"
+                      className="text-dark shadow-1 hover:bg-gray-2 inline-flex items-center justify-center rounded-md bg-primaryOrange px-4 py-[14px] text-center text-base font-medium transition duration-300 ease-in-out hover:bg-primaryOrange/60"
                     >
                       <div className="ml-2 flex items-center justify-center">
                         <div className=" font-semibold">Start Tracking Now</div>
@@ -42,9 +45,9 @@ const Hero = () => {
                             <path
                               d="M10.75 8.75L14.25 12L10.75 15.25"
                               stroke="currentColor"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="1.5"
                             ></path>
                           </svg>
                         </div>
@@ -78,7 +81,7 @@ const Hero = () => {
                     </Link>
                   </li> */}
                 </ul>
-{/* 
+                {/* 
                 <div>
                   <p className="mb-4 text-center text-base font-medium text-white/60">
                     Play is now available for all popular frameworks
