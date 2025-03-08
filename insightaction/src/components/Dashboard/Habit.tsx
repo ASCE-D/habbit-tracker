@@ -93,7 +93,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [addTodoModalOpen, setAddTodoModalOpen] = useState(false);
 
-  const router = useRouter();
+  // const router = useRouter();
   let preferenceOrder: HabitWithStats[] = [];
   const preferenceOrderString = localStorage.getItem("habitsOrder");
   if (preferenceOrderString !== null) {
@@ -139,6 +139,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     const res = await markTodo(todoId);
     if (res.success) {
       toast("Todo marked as completed");
+      playCompletionSound();
       fetchTodos();
     }
   };
@@ -465,12 +466,14 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
               <Flag
                 className={`mr-2 h-4 w-4 ${priorityColors[todo.priority as keyof typeof priorityColors]}`}
               />
-              <span className={`${todo.isCompleted ? "line-through" : ""}`}>
+              <span
+                className={`${todo.isCompleted ? "line-through" : ""} ${priorityColors[todo.priority as keyof typeof priorityColors]}`}
+              >
                 {todo.title}
               </span>
             </div>
             {todo.description && (
-              <span className="m-1 ml-6 text-sm text-gray-500">
+              <span className="m-1 ml-6 mr-4 text-sm text-gray-500">
                 {todo.description}
               </span>
             )}
@@ -572,6 +575,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     const res = await addTodo(data);
     if (res.success) {
       toast.success("Todo added successfully");
+      
       fetchTodos();
     } else {
       toast.error("failed to add todo");
@@ -786,7 +790,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
           )}
         </TabsContent>
         <TabsContent value="todos" className="mt-0">
-          <div className=" mb-4 flex justify-end">
+          <div className=" flex justify-end">
             <button
               onClick={() => setAddTodoModalOpen(true)}
               className="text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primaryOrange px-4 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"

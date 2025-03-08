@@ -13,6 +13,7 @@ import PreLoader from "@/components/Common/PreLoader";
 import { usePathname } from "next/navigation";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/react";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function RootLayout({
   children,
@@ -57,8 +58,8 @@ export default function RootLayout({
               enableSystem={false}
               defaultTheme="dark"
             >
-              <ToasterContext />
               <Header />
+              <Toaster />
               {children}
               <Footer />
               <ScrollToTop />
