@@ -158,12 +158,16 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
   };
 
   const fetchTodos = async () => {
+    setIsLoading(true);
     const res = await getTodos();
-    console.log(res);
 
     if (res.success) {
       console.log(res.todos);
       setTodos(res.todos);
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
+      console.error("Failed to fetch todos:", res);
     }
   };
 
@@ -575,7 +579,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     const res = await addTodo(data);
     if (res.success) {
       toast.success("Todo added successfully");
-      
+
       fetchTodos();
     } else {
       toast.error("failed to add todo");
