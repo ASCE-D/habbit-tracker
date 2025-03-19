@@ -89,9 +89,11 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
   const [sortingEnabled, setSortingEnabled] = useState(false);
   const [isStackModalOpen, setIsStackModalOpen] = useState(false);
   const [habitCount, setHabitCount] = useState(0);
-  const [activeTab, setActiveTab] = useState("habits");
   const [todos, setTodos] = useState<Todo[]>([]);
   const [addTodoModalOpen, setAddTodoModalOpen] = useState(false);
+
+  const activeTabRef = useRef("habits"); // Use useRef to store the active tab
+  const [activeTab, setActiveTab] = useState(activeTabRef.current);
 
   // const router = useRouter();
   let preferenceOrder: HabitWithStats[] = [];
@@ -152,6 +154,11 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     fetchCompletedHabits();
     fetchTodos();
   }, [date]);
+
+  const handleTabChange = (tab: string) => {
+    activeTabRef.current = tab;
+    setActiveTab(tab);
+  };
 
   const handleEditHabit = (habit: Habit) => {
     setEditingHabit(habit);
@@ -579,8 +586,12 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     const res = await addTodo(data);
     if (res.success) {
       toast.success("Todo added successfully");
-
       fetchTodos();
+      // Keep the active tab as "todos" if it was already "todos"
+      if (activeTabRef.current !== "todos") {
+        activeTabRef.current = "habits";
+        setActiveTab("habits");
+      }
     } else {
       toast.error("failed to add todo");
       console.error("Failed to add todo:", res.error);
@@ -598,7 +609,8 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
       <Tabs
         defaultValue="habits"
         className="w-full"
-        onValueChange={setActiveTab}
+        value={activeTab} // Use the useState value
+        onValueChange={handleTabChange} // Use the handleTabChange function
       >
         <TabsList className="mb-4 grid w-full grid-cols-2">
           <TabsTrigger value="habits">Habits</TabsTrigger>
