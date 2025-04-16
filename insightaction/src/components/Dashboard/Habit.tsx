@@ -1,12 +1,9 @@
-// components/HabitList.tsx
-
 "use client";
 
 import React, {
   useState,
   useEffect,
   useCallback,
-  useMemo,
   useRef,
 } from "react";
 import { Button } from "@/components/ui/button";
@@ -23,12 +20,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  ArrowDownNarrowWide,
   CalendarIcon,
   Flag,
-  GripVertical,
   MoreVertical,
-  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AddHabitModal } from "./Addhabit";
@@ -48,15 +42,13 @@ import {
   markTodo,
   updateTodo,
 } from "@/actions/habit/test";
-import PreLoader from "../Common/PreLoader";
+
 import { EditHabitModal } from "./edithabit";
-import dynamic from "next/dynamic";
-import SimpleHabitList from "./DragTest";
-import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { AddTodoModal } from "./AddTodo";
 import Loader from "../Common/Loader";
+import { v4 as uuidv4 } from "uuid";
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -136,15 +128,45 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     }
   };
 
-  const handleTodoComplete = async (todoId: string) => {
-    console.log("Todo completed:", todoId);
-    const res = await markTodo(todoId);
-    if (res.success) {
-      toast("Todo marked as completed");
-      playCompletionSound();
-      fetchTodos();
+const handleTodoComplete = async (todoId: string) => {
+  // 1. Optimistically update the UI
+  const originalTodos = todos; // Keep a copy in case we need to revert *manually* if fetch fails later
+  setTodos((prevTodos) =>
+    prevTodos.map((todo) =>
+      todo.id === todoId
+        ? { ...todo, isCompleted: true, updatedAt: new Date() } // Update isCompleted optimistically
+        : todo,
+    ),
+  );
+
+  // 2. Play sound immediately
+  playCompletionSound();
+  toast("Todo marked as completed"); // Give immediate feedback
+
+  try {
+    // 3. Call the server action
+    const res = await markTodo(todoId); // Assumes markTodo takes only the ID
+
+    if (!res.success) {
+      // 4. FAILURE: Revert the optimistic update by fetching fresh data
+      console.error("Failed to mark todo as complete on server:", res.error);
+      toast.error(`Failed to save completion: ${res.error || "Reverting."}`);
+      // Re-fetch to ensure consistency
+      fetchTodos(); // This will overwrite the optimistic state with server state
+      // Alternative if fetchTodos itself might fail: setTodos(originalTodos);
+    } else {
+      // 5. SUCCESS: Do nothing more to the UI state. The optimistic update is now confirmed.
+      console.log("Todo marked complete successfully on server");
     }
-  };
+  } catch (error) {
+    // 6. NETWORK/UNEXPECTED FAILURE: Revert the optimistic update
+    console.error("Error marking todo complete:", error);
+    toast.error("An network error occurred. Reverting completion.");
+    // Re-fetch to ensure consistency
+    fetchTodos();
+    // Alternative: setTodos(originalTodos);
+  }
+};
 
   useEffect(() => {
     setIsClient(true);
@@ -582,21 +604,45 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     );
   };
 
-  const handleAddTodo = async (data: Partial<Todo>) => {
-    const res = await addTodo(data);
-    if (res.success) {
-      toast.success("Todo added successfully");
-      fetchTodos();
-      // Keep the active tab as "todos" if it was already "todos"
-      if (activeTabRef.current !== "todos") {
-        activeTabRef.current = "habits";
-        setActiveTab("habits");
-      }
-    } else {
-      toast.error("failed to add todo");
-      console.error("Failed to add todo:", res.error);
-    }
+const handleAddTodo = async (data: Partial<Todo>) => {
+  const tempId = uuidv4();; // Use the simpler generator
+
+  const optimisticTodo: Todo = {
+    id: tempId,
+    title: data.title || "Untitled Todo",
+    description: data.description || null,
+    priority: data.priority || "p3",
+    isCompleted: false,
+    userId: "", // Placeholder
   };
+
+  setTodos((prevTodos) => [optimisticTodo, ...prevTodos]);
+  setAddTodoModalOpen(false);
+
+  try {
+    const res = await addTodo(data);
+
+    if (res.success && res.todo) {
+      setTodos((prevTodos) =>
+        prevTodos.map(
+          (todo) => (todo.id === tempId ? res.todo : todo), // Replace with real data
+        ),
+      );
+      toast.success("Todo added successfully");
+    } else {
+      console.error("Failed to add todo:", res.error);
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== tempId)); // Revert
+      toast.error(`Failed to add todo: ${res.error || "Please try again."}`);
+    }
+  } catch (error) {
+    console.error("Error adding todo:", error);
+    setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== tempId)); // Revert
+    toast.error("An unexpected error occurred while adding the todo.");
+  } finally {
+    // Ensure modal is closed
+    setAddTodoModalOpen(false);
+  }
+};
 
   return isLoading ? (
     <div className="flex h-screen items-center justify-center">
