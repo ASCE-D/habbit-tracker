@@ -167,10 +167,23 @@ export default function HabitDetails({ habit }: { habit: any | null }) {
                 Sharing habit progress with others can massively increase your
                 chance of achieving your goals and sticking to this habit.
               </p>
+              
               <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="icon">
-                  <Share2 size={18} />
-                </Button>
+                
+              <Button variant="ghost" size="icon" onClick={handleShare}>
+            <Share2 size={18} />
+          </Button>
+              </div>
+            </div>
+            <div className="rounded-lg border border-gray-600 p-4">
+              <h3 className="mb-2 text-lg font-bold">Description</h3>
+              <p className="mb-4 text-sm text-gray-400">
+                {habit.description}
+              </p>
+              
+              <div className="flex items-center space-x-2">
+                
+         
               </div>
             </div>
           </div>

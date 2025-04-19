@@ -80,13 +80,13 @@ export function Sidebar({ isMobile }: { isMobile: boolean }) {
               <FolderClosed className="h-4 w-4" />
               Enable Notification
             </Link>
-            <Link
+            {/* <Link
               href="#"
               className="text-muted-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primaryOrange"
             >
               <Plus className="h-4 w-4" />
               Add a Goal
-            </Link>
+            </Link> */}
           </div>
           <div className="mt-4">
             <h3 className="text-muted-foreground mb-2 px-3 text-xs font-semibold">

@@ -48,9 +48,9 @@ const PricingBox = ({ product }: { product: Price }) => {
         </h2>
 
         <div className="mb-[50px]">
-          <h3 className="mb-5 text-lg font-medium text-white dark:text-white">
+          {/* <h3 className="mb-5 text-lg font-medium text-white dark:text-white">
             Features
-          </h3>
+          </h3> */}
           <div className="mb-10">
             {product?.offers.map((offer, i) => (
               <OfferList key={i} text={offer} />
@@ -59,7 +59,7 @@ const PricingBox = ({ product }: { product: Price }) => {
         </div>
         <div className="w-full">
         <a
-      href="/pay"
+      href="https://insightaction.lemonsqueezy.com/checkout"
       >
           <button
             // onClick={handleSubscription}

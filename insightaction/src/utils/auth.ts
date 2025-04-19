@@ -102,11 +102,18 @@ export const authOptions: NextAuthOptions = {
 
     session: async ({ session, token }) => {
       if (session?.user) {
+        // Get the user from the database to include isPaid status
+        const user = await prisma.user.findUnique({
+          where: { id: token?.id as string },
+          select: { isPaid: true }
+        });
+
         return {
           ...session,
           user: {
             ...session.user,
             id: token?.id,
+            isPaid: user?.isPaid || false,
           },
         };
       }

@@ -42,13 +42,20 @@ import {
   markTodo,
   updateTodo,
 } from "@/actions/habit/test";
-
+import { useSession } from "next-auth/react";
 import { EditHabitModal } from "./edithabit";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { AddTodoModal } from "./AddTodo";
 import Loader from "../Common/Loader";
 import { v4 as uuidv4 } from "uuid";
+
+// Extend the session type to include isPaid
+declare module "next-auth" {
+  interface User {
+    isPaid?: boolean;
+  }
+}
 
 interface HabitListProps {
   initialHabits: Habit[];
@@ -68,7 +75,6 @@ interface HabitDayResult {
   success: boolean;
   habits: HabitWithStats[];
 }
-const MAX_HABITS = 5;
 
 const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
   const [date, setDate] = useState<Date>(new Date());
@@ -83,20 +89,19 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
   const [habitCount, setHabitCount] = useState(0);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [addTodoModalOpen, setAddTodoModalOpen] = useState(false);
-
+  const { data: session } = useSession();
+ 
   const activeTabRef = useRef("habits"); // Use useRef to store the active tab
   const [activeTab, setActiveTab] = useState(activeTabRef.current);
 
-  // const router = useRouter();
+  // Get max habits based on user's payment status
+  const MAX_HABITS = session?.user?.isPaid ? 7 : 2;
+
   let preferenceOrder: HabitWithStats[] = [];
   const preferenceOrderString = localStorage.getItem("habitsOrder");
   if (preferenceOrderString !== null) {
     preferenceOrder = JSON.parse(preferenceOrderString);
   }
-
-  // useEffect(() => {
-  //   setHabits(preferenceOrder);
-  // });
 
   const handleCountStats = (goalCount: number, remainingCount: number) => {
     const displayCount = goalCount - remainingCount;
@@ -189,6 +194,7 @@ const handleTodoComplete = async (todoId: string) => {
   const fetchTodos = async () => {
     setIsLoading(true);
     const res = await getTodos();
+    console.log(res);
 
     if (res.success) {
       console.log(res.todos);
