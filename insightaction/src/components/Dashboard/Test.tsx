@@ -126,11 +126,11 @@ export function Sidebar({ isMobile }: { isMobile: boolean }) {
           <CardHeader className="p-2 pt-0 md:p-4">
             <CardTitle>Upgrade to Pro</CardTitle>
             <CardDescription>
-              Unlock all features and get unlimited access to our support team.
+              Upgrade to Pro to get 7 habits and more features.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
-            <a href="/pay">
+            <a href="https://insightaction.lemonsqueezy.com/checkout">
               <Button size="sm" className="w-full">
                 Upgrade
               </Button>
