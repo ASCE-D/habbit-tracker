@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
@@ -27,12 +27,18 @@ import {
   getYear,
   getWeek,
 } from "date-fns";
-import { Habit } from "@prisma/client";
-import { CalendarDays, CheckCircle2, PercentSquare, TrendingUp } from "lucide-react";
+import {
+  CalendarDays,
+  CheckCircle2,
+  PercentSquare,
+  TrendingUp,
+} from "lucide-react";
+import { useMediaQuery } from "react-responsive";
 
 const HabitTrackingDashboard = ({ habit }: any) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState("daily");
+  const [viewMode, setViewMode] = useState("weekly");
+  const isMobile = useMediaQuery({ maxWidth: 768 }); // Use react-responsive directly
 
   const stats = useMemo(
     () => ({
@@ -125,7 +131,6 @@ const HabitTrackingDashboard = ({ habit }: any) => {
     () => getChartData(),
     [habit, selectedDate, viewMode],
   );
-  console.log(habit);
 
   const icons: any = {
     "Habits Tracked": CalendarDays,
@@ -136,136 +141,139 @@ const HabitTrackingDashboard = ({ habit }: any) => {
 
   return (
     <div className="container mx-auto px-4">
-      <div>
-        <h1 className="mb-6 text-3xl font-bold">Habit Tracking Dashboard</h1>
-        <div>
-          {" "}
-          <Card className="flex flex-col">
-            {/* <CardHeader>
-              <CardTitle className="text-xl">{stats.title}</CardTitle>
-            </CardHeader> */}
-            <CardContent className="flex flex-grow items-center justify-center">
-              <div className="grid w-full grid-cols-7  ">
-                {Object.entries(stats)
-                  .filter(([key]) => key !== "title")
-                  .map(([key, value]) => {
-                    const Icon = icons[key];
-                    return (
-                      <div
-                        key={key}
-                        className="my-8 flex flex-col items-center text-center"
-                      >
-                        {Icon && (
-                          <Icon size={24} className="text-primary mb-1" />
-                        )}
-                        <h3 className="text-xl font-medium text-gray-500 dark:text-gray-400">
-                          {key}
-                        </h3>
-                        <p className="mt-1 text-xl font-semibold">{value}</p>
-                      </div>
-                    );
-                  })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
-          <Card className="my-6 flex w-full">
-            <div className="w-full">
-              <div className="w-full">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{stats.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Tabs defaultValue="daily" className="w-full">
-                      <TabsList>
-                        <TabsTrigger
-                          value="daily"
-                          onClick={() => setViewMode("daily")}
-                        >
-                          Daily
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="weekly"
-                          onClick={() => setViewMode("weekly")}
-                        >
-                          Weekly
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="monthly"
-                          onClick={() => setViewMode("monthly")}
-                        >
-                          Monthly
-                        </TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="daily">
-                        <ResponsiveContainer width="100%" height={300}>
-                          <LineChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="date" />
-                            <YAxis />
-                            <Tooltip />
-                            <Line
-                              type="monotone"
-                              dataKey="completed"
-                              stroke="#8884d8"
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </TabsContent>
-                      <TabsContent value="weekly">
-                        <ResponsiveContainer width="100%" height={300}>
-                          <LineChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="week" />
-                            <YAxis />
-                            <Tooltip />
-                            <Line
-                              type="monotone"
-                              dataKey="completed"
-                              stroke="#82ca9d"
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </TabsContent>
-                      <TabsContent value="monthly">
-                        <ResponsiveContainer width="100%" height={300}>
-                          <LineChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <Tooltip />
-                            <Line
-                              type="monotone"
-                              dataKey="completed"
-                              stroke="#ffc658"
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </TabsContent>
-                    </Tabs>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-            <div>
-              <Card className="my-4 mx-2">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Select Date</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => setSelectedDate(date || new Date())}
-                    className="rounded-md border"
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          </Card>
-        </div>
+      <h1 className="mb-4 text-2xl font-bold md:mb-6 md:text-3xl">
+        Habit Tracking Dashboard
+      </h1>
+
+      {/* Stats Card */}
+      <Card className="mb-4">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
+            {Object.entries(stats)
+              .filter(([key]) => key !== "title")
+              .map(([key, value]) => {
+                const Icon = icons[key];
+                return (
+                  <div
+                    key={key}
+                    className="flex flex-col items-center p-2 text-center"
+                  >
+                    {Icon && (
+                      <Icon
+                        size={20}
+                        className="text-primary mb-1 md:size-24"
+                      />
+                    )}
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 md:text-base">
+                      {key}
+                    </h3>
+                    <p className="mt-1 text-sm font-semibold md:text-xl">
+                      {value}
+                    </p>
+                  </div>
+                );
+              })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Chart and Calendar Section */}
+      <div
+        className={`${isMobile ? "flex flex-col space-y-4" : "grid grid-cols-3 gap-4"}`}
+      >
+        {/* Chart Card */}
+        <Card className={`${isMobile ? "w-full" : "col-span-2"}`}>
+          <CardHeader>
+            <CardTitle className="text-xl">{stats.title}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="daily" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="daily" onClick={() => setViewMode("daily")}>
+                  Daily
+                </TabsTrigger>
+                <TabsTrigger
+                  value="weekly"
+                  onClick={() => setViewMode("weekly")}
+                >
+                  Weekly
+                </TabsTrigger>
+                <TabsTrigger
+                  value="monthly"
+                  onClick={() => setViewMode("monthly")}
+                >
+                  Monthly
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="daily">
+                <div className="h-[250px] w-full md:h-[300px]">
+                  <ResponsiveContainer>
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip />
+                      <Line
+                        type="monotone"
+                        dataKey="completed"
+                        stroke="#8884d8"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </TabsContent>
+              <TabsContent value="weekly">
+                <div className="h-[250px] w-full md:h-[300px]">
+                  <ResponsiveContainer>
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="week" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip />
+                      <Line
+                        type="monotone"
+                        dataKey="completed"
+                        stroke="#82ca9d"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </TabsContent>
+              <TabsContent value="monthly">
+                <div className="h-[250px] w-full md:h-[300px]">
+                  <ResponsiveContainer>
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip />
+                      <Line
+                        type="monotone"
+                        dataKey="completed"
+                        stroke="#ffc658"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        {/* Calendar Card */}
+        <Card className={`${isMobile ? "w-full" : "col-span-1"}`}>
+          <CardHeader>
+            <CardTitle className="text-xl">Select Date</CardTitle>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => setSelectedDate(date || new Date())}
+              className="rounded-md border"
+            />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

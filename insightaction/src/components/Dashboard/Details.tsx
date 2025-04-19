@@ -169,10 +169,10 @@ export default function HabitDetails({ habit }: { habit: any | null }) {
               </p>
               
               <div className="flex items-center space-x-2">
-                
-              <Button variant="ghost" size="icon" onClick={handleShare}>
-            <Share2 size={18} />
-          </Button>
+                <Button variant="ghost" size="icon" onClick={handleShare}>
+                  <Share2 size={18} />
+                </Button>
+
               </div>
             </div>
             <div className="rounded-lg border border-gray-600 p-4">
