@@ -16,6 +16,22 @@ const Hero = () => {
                 className="hero-content wow fadeInUp mx-auto max-w-[780px] text-center"
                 data-wow-delay=".2s"
               >
+                  <ul className="mb-10 flex flex-wrap items-center justify-center gap-5">
+                <a
+  href="https://www.producthunt.com/posts/insightaction?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-insightaction"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <img
+    src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=955730&theme=dark&t=1745196658663"
+    alt="Insightaction - Build lasting habits with atomic precision."
+    width={250}
+    height={54}
+    style={{ width: '250px', height: '54px' }}
+  />
+</a>
+</ul>
+
                 <h1 className="mb-6 text-3xl font-bold leading-snug text-white sm:text-4xl sm:leading-snug lg:text-5xl lg:leading-[1.2]">
                   Build Lasting Habits with Atomic Precision.
                 </h1>
@@ -26,6 +42,7 @@ const Hero = () => {
                   life.
                 </p>
                 <ul className="mb-10 flex flex-wrap items-center justify-center gap-5">
+                  
                   <li>
                     <Link
                       href="/journal/habits"
@@ -227,7 +244,7 @@ const Hero = () => {
                 className="wow fadeInUp relative z-10 mx-auto max-w-[845px]"
                 data-wow-delay=".25s"
               >
-                <div className="mt-16">
+                {/* <div className="mt-16">
                   <Image
                     src="/images/hero/hero.png"
                     alt="hero"
@@ -235,6 +252,17 @@ const Hero = () => {
                     width={845}
                     height={316}
                   />
+                </div> */}
+                <div className="mt-8">
+                  <div className="relative aspect-video w-full max-w-[845px] mx-auto">
+                    <iframe
+                      src="https://www.youtube.com/embed/d9ut_YKt_t8"
+                      title="InsightAction Video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="absolute top-0 left-0 w-full h-full rounded-xl"
+                    />
+                  </div>
                 </div>
                 <div className="absolute -left-9 bottom-0 z-[-1]">
                   <svg
