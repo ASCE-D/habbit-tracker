@@ -130,7 +130,7 @@ export function Sidebar({ isMobile }: { isMobile: boolean }) {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
-            <a href="https://insightaction.lemonsqueezy.com/checkout">
+            <a href="https://insightaction.lemonsqueezy.com/buy/b502c992-65b4-4ebf-ab1a-3ea4668b9879">
               <Button size="sm" className="w-full">
                 Upgrade
               </Button>
