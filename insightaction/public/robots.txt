@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://insightaction.pureapps.tech/
+
+# Sitemaps
+Sitemap: https://insightaction.pureapps.tech/sitemap.xml
