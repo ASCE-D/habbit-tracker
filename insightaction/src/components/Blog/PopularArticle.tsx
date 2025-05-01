@@ -1,39 +1,36 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const PopularArticle = (props: {
+interface PopularArticleProps {
   image: string;
   title: string;
   name: string;
-}) => {
-  const { image, title, name } = props;
+}
+
+const PopularArticle = ({ image, title, name }: PopularArticleProps) => {
   return (
-    <div className="w-full px-4 md:w-1/2 lg:w-full">
-      <div
-        className="wow fadeInUp mb-5 flex w-full items-center border-b border-stroke pb-5 dark:border-dark-3"
-        data-wow-delay=".1s"
-      >
-        <div className={`mr-5 overflow-hidden rounded`}>
-          <Image
-            src={image}
-            alt="image"
-            width={80}
-            height={80}
-            objectFit="cover"
-            objectPosition="center"
-          />
-        </div>
-        <div className="w-full">
-          <h4>
-            <Link
-              href="/#"
-              className="mb-1 inline-block text-lg font-medium leading-snug text-dark hover:text-primary dark:text-dark-6 dark:hover:text-primary lg:text-base xl:text-lg"
-            >
-              {title}
-            </Link>
-          </h4>
-          <p className="text-sm text-body-color dark:text-dark-6">{name}</p>
-        </div>
+    <div className="flex items-center gap-4">
+      <div className="h-16 w-16 overflow-hidden rounded-lg">
+        <Image
+          src={image || "/placeholder.svg"}
+          alt={title}
+          width={64}
+          height={64}
+          className="h-full w-full object-cover"
+        />
+      </div>
+      <div className="flex-1">
+        <h4>
+          <Link
+            href="/#"
+            className="text-dark hover:text-primary dark:hover:text-primary mb-1 block text-base font-medium dark:text-white"
+          >
+            {title}
+          </Link>
+        </h4>
+        <p className="text-body-color dark:text-body-color-dark text-xs">
+          By {name}
+        </p>
       </div>
     </div>
   );

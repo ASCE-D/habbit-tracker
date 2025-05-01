@@ -1,11 +1,12 @@
 @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
-  :root {
+@tailwind components;
+@tailwind utilities;
+
+:root {
   --primary: black;
   --secondary: gray;
 }
-  
+
 /* Firefox */
 * {
   scrollbar-width: thin;
@@ -29,12 +30,13 @@
   border: 3px solid var(--primary);
 }
 
+/* Fixed checkmark animation */
 .checkmark__circle {
   stroke-dasharray: 166;
   stroke-dashoffset: 166;
   stroke-width: 2;
   stroke-miterlimit: 10;
-  stroke: @apply text-green-500;
+  stroke: #22c55e; /* text-green-500 */
   fill: none;
   animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
 }
@@ -57,7 +59,8 @@
 }
 
 @keyframes scale {
-  0%, 100% {
+  0%,
+  100% {
     transform: none;
   }
   50% {
@@ -67,12 +70,151 @@
 
 @keyframes fill {
   100% {
-    box-shadow: inset 0px 0px 0px 30px @apply bg-white;
+    box-shadow: inset 0px 0px 0px 30px #ffffff; /* bg-white */
   }
 }
 
+/* MDX Content Styling - Adjusted for your color scheme */
+.mdx-content {
+  @apply text-base leading-relaxed text-foreground;
+}
 
+.mdx-content h1,
+.mdx-content h2,
+.mdx-content h3,
+.mdx-content h4,
+.mdx-content h5,
+.mdx-content h6 {
+  @apply font-bold text-foreground mb-4 mt-8 first:mt-0;
+}
 
-@layer base {}
+.mdx-content h1 {
+  @apply text-3xl;
+}
 
+.mdx-content h2 {
+  @apply text-2xl border-b border-border pb-2;
+}
 
+.mdx-content h3 {
+  @apply text-xl;
+}
+
+.mdx-content h4 {
+  @apply text-lg;
+}
+
+.mdx-content p {
+  @apply mb-6;
+}
+
+.mdx-content a {
+  @apply text-primaryOrange hover:underline;
+}
+
+.mdx-content ul {
+  @apply mb-6 list-disc pl-6;
+}
+
+.mdx-content ol {
+  @apply mb-6 list-decimal pl-6;
+}
+
+.mdx-content li {
+  @apply mb-2;
+}
+
+.mdx-content blockquote {
+  @apply border-l-4 border-primaryOrange pl-4 italic my-6 py-2 bg-muted rounded-r-md;
+}
+
+.mdx-content pre {
+  @apply bg-muted text-foreground p-4 rounded-lg overflow-x-auto mb-6;
+}
+
+.mdx-content code {
+  @apply bg-muted px-1 py-0.5 rounded text-primaryOrange font-mono text-sm;
+}
+
+.mdx-content pre code {
+  @apply bg-transparent text-foreground p-0;
+}
+
+.mdx-content img {
+  @apply rounded-lg shadow-md my-6 mx-auto;
+}
+
+.mdx-content hr {
+  @apply my-8 border-border;
+}
+
+.mdx-content table {
+  @apply w-full border-collapse mb-6;
+}
+
+.mdx-content th {
+  @apply bg-muted p-2 text-left border border-border;
+}
+
+.mdx-content td {
+  @apply p-2 border border-border;
+}
+
+/* Custom syntax highlighting for code blocks */
+.mdx-content pre code .keyword {
+  @apply text-pink-400;
+}
+
+.mdx-content pre code .string {
+  @apply text-green-400;
+}
+
+.mdx-content pre code .comment {
+  @apply text-mutedForeground;
+}
+
+.mdx-content pre code .function {
+  @apply text-blue-400;
+}
+
+.mdx-content pre code .number {
+  @apply text-yellow-400;
+}
+
+/* Callout boxes */
+.mdx-content .info,
+.mdx-content .warning,
+.mdx-content .error,
+.mdx-content .success {
+  @apply p-4 mb-6 rounded-lg border-l-4;
+}
+
+.mdx-content .info {
+  @apply bg-blue-950/20 border-blue-500;
+}
+
+.mdx-content .warning {
+  @apply bg-yellow-950/20 border-yellow-500;
+}
+
+.mdx-content .error {
+  @apply bg-red-950/20 border-destructive;
+}
+
+.mdx-content .success {
+  @apply bg-green-950/20 border-done;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fadeIn {
+  animation: fadeIn 0.5s ease-in-out;
+}

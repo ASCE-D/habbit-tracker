@@ -268,7 +268,7 @@ export const deleteTodo = async (id: string) => {
   }
 };
 
-export const updateTodo = async (id: string, data: Todo) => {
+export const updateTodo = async (id: string, data: Partial<Todo>) => {
   const session = await getServerSession();
 
   if (!session?.user?.email) {

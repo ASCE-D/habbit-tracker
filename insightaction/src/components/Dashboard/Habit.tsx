@@ -1,11 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,11 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  CalendarIcon,
-  Flag,
-  MoreVertical,
-} from "lucide-react";
+import { CalendarIcon, Flag, MoreVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AddHabitModal } from "./Addhabit";
 import {
@@ -32,7 +23,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Habit, HabitStatus, Todo } from "@prisma/client";
+import { Habit, HabitStatus, priority, Todo } from "@prisma/client";
 import { trackHabit, fetchHabits, deleteHabit } from "@/actions/habit";
 import {
   addTodo,
@@ -49,6 +40,10 @@ import { toast } from "sonner";
 import { AddTodoModal } from "./AddTodo";
 import Loader from "../Common/Loader";
 import { v4 as uuidv4 } from "uuid";
+import {
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@radix-ui/react-dropdown-menu";
 
 // Extend the session type to include isPaid
 declare module "next-auth" {
@@ -90,7 +85,7 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [addTodoModalOpen, setAddTodoModalOpen] = useState(false);
   const { data: session } = useSession();
- 
+
   const activeTabRef = useRef("habits"); // Use useRef to store the active tab
   const [activeTab, setActiveTab] = useState(activeTabRef.current);
 
@@ -133,45 +128,45 @@ const HabitList: React.FC<any> = ({ onHabitSelect, isMobile }) => {
     }
   };
 
-const handleTodoComplete = async (todoId: string) => {
-  // 1. Optimistically update the UI
-  const originalTodos = todos; // Keep a copy in case we need to revert *manually* if fetch fails later
-  setTodos((prevTodos) =>
-    prevTodos.map((todo) =>
-      todo.id === todoId
-        ? { ...todo, isCompleted: true, updatedAt: new Date() } // Update isCompleted optimistically
-        : todo,
-    ),
-  );
+  const handleTodoComplete = async (todoId: string) => {
+    // 1. Optimistically update the UI
+    const originalTodos = todos; // Keep a copy in case we need to revert *manually* if fetch fails later
+    setTodos((prevTodos) =>
+      prevTodos.map((todo) =>
+        todo.id === todoId
+          ? { ...todo, isCompleted: true, updatedAt: new Date() } // Update isCompleted optimistically
+          : todo,
+      ),
+    );
 
-  // 2. Play sound immediately
-  playCompletionSound();
-  toast("Todo marked as completed"); // Give immediate feedback
+    // 2. Play sound immediately
+    playCompletionSound();
+    toast("Todo marked as completed"); // Give immediate feedback
 
-  try {
-    // 3. Call the server action
-    const res = await markTodo(todoId); // Assumes markTodo takes only the ID
+    try {
+      // 3. Call the server action
+      const res = await markTodo(todoId); // Assumes markTodo takes only the ID
 
-    if (!res.success) {
-      // 4. FAILURE: Revert the optimistic update by fetching fresh data
-      console.error("Failed to mark todo as complete on server:", res.error);
-      toast.error(`Failed to save completion: ${res.error || "Reverting."}`);
+      if (!res.success) {
+        // 4. FAILURE: Revert the optimistic update by fetching fresh data
+        console.error("Failed to mark todo as complete on server:", res.error);
+        toast.error(`Failed to save completion: ${res.error || "Reverting."}`);
+        // Re-fetch to ensure consistency
+        fetchTodos(); // This will overwrite the optimistic state with server state
+        // Alternative if fetchTodos itself might fail: setTodos(originalTodos);
+      } else {
+        // 5. SUCCESS: Do nothing more to the UI state. The optimistic update is now confirmed.
+        console.log("Todo marked complete successfully on server");
+      }
+    } catch (error) {
+      // 6. NETWORK/UNEXPECTED FAILURE: Revert the optimistic update
+      console.error("Error marking todo complete:", error);
+      toast.error("An network error occurred. Reverting completion.");
       // Re-fetch to ensure consistency
-      fetchTodos(); // This will overwrite the optimistic state with server state
-      // Alternative if fetchTodos itself might fail: setTodos(originalTodos);
-    } else {
-      // 5. SUCCESS: Do nothing more to the UI state. The optimistic update is now confirmed.
-      console.log("Todo marked complete successfully on server");
+      fetchTodos();
+      // Alternative: setTodos(originalTodos);
     }
-  } catch (error) {
-    // 6. NETWORK/UNEXPECTED FAILURE: Revert the optimistic update
-    console.error("Error marking todo complete:", error);
-    toast.error("An network error occurred. Reverting completion.");
-    // Re-fetch to ensure consistency
-    fetchTodos();
-    // Alternative: setTodos(originalTodos);
-  }
-};
+  };
 
   useEffect(() => {
     setIsClient(true);
@@ -324,6 +319,110 @@ const handleTodoComplete = async (todoId: string) => {
       } else {
         alert("Failed to delete habit. Please try again.");
       }
+    }
+  };
+
+  const handleTodoUpdate = async (todoId: string, data: Partial<Todo>) => {
+    const priorityOrder = {
+      p1: 1,
+      p2: 2,
+      p3: 3,
+    };
+
+    // First, find the current todo to check if priority is changing
+    const currentTodo = todos.find((todo) => todo.id === todoId);
+    if (!currentTodo) return;
+
+    // Create the updated todo for optimistic update
+    const updatedTodo = { ...currentTodo, ...data };
+
+    // Handle optimistic update with proper sorting
+    setTodos((prevTodos) => {
+      // Remove the current todo
+      const filteredTodos = prevTodos.filter((todo) => todo.id !== todoId);
+
+      // Create a new array with the updated todo
+      const newTodos = [...filteredTodos];
+
+      // If priority changed, we need to find the right position
+      if (data.priority && data.priority !== currentTodo.priority) {
+        // Find where to insert based on priority
+        const insertIndex = newTodos.findIndex(
+          (todo) =>
+            priorityOrder[todo.priority as keyof typeof priorityOrder] >
+            priorityOrder[updatedTodo.priority as keyof typeof priorityOrder],
+        );
+
+        if (insertIndex === -1) {
+          // If no lower priority todos found, add to the end
+          newTodos.push(updatedTodo);
+        } else {
+          // Insert at the correct position
+          newTodos.splice(insertIndex, 0, updatedTodo);
+        }
+      } else {
+        // If priority didn't change, find todos with the same priority
+        const samepriorityIndex = newTodos.findIndex(
+          (todo) => todo.priority === updatedTodo.priority,
+        );
+
+        if (samepriorityIndex === -1) {
+          // If no todos with same priority, add to the end
+          newTodos.push(updatedTodo);
+        } else {
+          // Insert among todos with the same priority
+          // Find the last todo with this priority
+          let insertIndex = samepriorityIndex;
+          while (
+            insertIndex < newTodos.length &&
+            newTodos[insertIndex].priority === updatedTodo.priority
+          ) {
+            insertIndex++;
+          }
+          newTodos.splice(insertIndex, 0, updatedTodo);
+        }
+      }
+
+      return newTodos;
+    });
+
+    try {
+      const res = await updateTodo(todoId, data);
+      if (res.success) {
+        console.log("Todo updated successfully:", res.todo);
+
+        // Replace the optimistic todo with the server response
+        setTodos((prevTodos) => {
+          // Remove the optimistic update
+          const filteredTodos = prevTodos.filter((todo) => todo.id !== todoId);
+
+          // Create a new array with all todos including the server response
+          const withServerTodo = [...filteredTodos, res.todo];
+
+          // Sort by priority
+          return withServerTodo.sort((a, b) => {
+            const priorityA =
+              priorityOrder[a.priority as keyof typeof priorityOrder] || 999;
+            const priorityB =
+              priorityOrder[b.priority as keyof typeof priorityOrder] || 999;
+            return priorityA - priorityB;
+          });
+        });
+
+        toast.success("Todo updated successfully");
+      } else {
+        console.error("Failed to update todo:", res.error);
+        // Revert the optimistic update by fetching fresh data
+        fetchTodos();
+        toast.error(
+          `Failed to update todo: ${res.error || "Please try again."}`,
+        );
+      }
+    } catch (error) {
+      console.error("Error updating todo:", error);
+      // Revert the optimistic update if there's an error
+      fetchTodos();
+      toast.error("An unexpected error occurred while updating the todo.");
     }
   };
 
@@ -502,9 +601,39 @@ const handleTodoComplete = async (todoId: string) => {
         >
           <div className="flex flex-col">
             <div className="flex items-center">
-              <Flag
-                className={`mr-2 h-4 w-4 ${priorityColors[todo.priority as keyof typeof priorityColors]}`}
-              />
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  {" "}
+                  <Flag
+                    className={`mr-2 h-4 w-4 ${priorityColors[todo.priority as keyof typeof priorityColors]}`}
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Update Priority</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="text-white" />
+                  {Array.from({ length: 3 }).map((_, i) => {
+                    const priorityKey =
+                      `p${i + 1}` as keyof typeof priorityColors;
+                    const priorityValue = priority[priorityKey]; // Type-safe enum value
+
+                    return (
+                      <DropdownMenuItem
+                        key={i}
+                        className={priorityColors[priorityKey]}
+                        onClick={() =>
+                          handleTodoUpdate(todo.id, { priority: priorityValue })
+                        }
+                      >
+                        <Flag
+                          className={`mr-2 h-4 w-4 ${priorityColors[priorityKey]}`}
+                        />
+                        Priority {i + 1}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <span
                 className={`${todo.isCompleted ? "line-through" : ""} ${priorityColors[todo.priority as keyof typeof priorityColors]}`}
               >
@@ -610,45 +739,82 @@ const handleTodoComplete = async (todoId: string) => {
     );
   };
 
-const handleAddTodo = async (data: Partial<Todo>) => {
-  const tempId = uuidv4();; // Use the simpler generator
+  const handleAddTodo = async (data: Partial<Todo>) => {
+    const tempId = uuidv4(); // Use the simpler generator
 
-  const optimisticTodo: Todo = {
-    id: tempId,
-    title: data.title || "Untitled Todo",
-    description: data.description || null,
-    priority: data.priority || "p3",
-    isCompleted: false,
-    userId: "", // Placeholder
-  };
+    const optimisticTodo: Todo = {
+      id: tempId,
+      title: data.title || "Untitled Todo",
+      description: data.description || null,
+      priority: data.priority || "p3",
+      isCompleted: false,
+      userId: "", // Placeholder
+    };
 
-  setTodos((prevTodos) => [optimisticTodo, ...prevTodos]);
-  setAddTodoModalOpen(false);
+    // Insert todo at the correct position based on priority
+    setTodos((prevTodos) => {
+      // Helper function to get priority weight (p1 > p2 > p3)
+      const getPriorityWeight = (priority: string): number => {
+        switch (priority) {
+          case "p1":
+            return 1;
+          case "p2":
+            return 2;
+          case "p3":
+            return 3;
+          default:
+            return 4; // For any other priority values
+        }
+      };
 
-  try {
-    const res = await addTodo(data);
+      // Create a new sorted array with the optimistic todo
+      const newTodos = [...prevTodos];
 
-    if (res.success && res.todo) {
-      setTodos((prevTodos) =>
-        prevTodos.map(
-          (todo) => (todo.id === tempId ? res.todo : todo), // Replace with real data
-        ),
+      // Find the position where this todo should be inserted
+      // We'll insert it after todos with the same priority
+      const insertIndex = newTodos.findIndex(
+        (todo) =>
+          getPriorityWeight(todo.priority as string) >
+          getPriorityWeight(optimisticTodo.priority as string),
       );
-      toast.success("Todo added successfully");
-    } else {
-      console.error("Failed to add todo:", res.error);
-      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== tempId)); // Revert
-      toast.error(`Failed to add todo: ${res.error || "Please try again."}`);
-    }
-  } catch (error) {
-    console.error("Error adding todo:", error);
-    setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== tempId)); // Revert
-    toast.error("An unexpected error occurred while adding the todo.");
-  } finally {
-    // Ensure modal is closed
+
+      if (insertIndex === -1) {
+        // If no lower priority todos found, add to the end
+        newTodos.push(optimisticTodo);
+      } else {
+        // Insert at the correct position
+        newTodos.splice(insertIndex, 0, optimisticTodo);
+      }
+
+      return newTodos;
+    });
+
     setAddTodoModalOpen(false);
-  }
-};
+
+    try {
+      const res = await addTodo(data);
+
+      if (res.success && res.todo) {
+        setTodos((prevTodos) =>
+          prevTodos.map(
+            (todo) => (todo.id === tempId ? res.todo : todo), // Replace with real data
+          ),
+        );
+        toast.success("Todo added successfully");
+      } else {
+        console.error("Failed to add todo:", res.error);
+        setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== tempId)); // Revert
+        toast.error(`Failed to add todo: ${res.error || "Please try again."}`);
+      }
+    } catch (error) {
+      console.error("Error adding todo:", error);
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== tempId)); // Revert
+      toast.error("An unexpected error occurred while adding the todo.");
+    } finally {
+      // Ensure modal is closed
+      setAddTodoModalOpen(false);
+    }
+  };
 
   return isLoading ? (
     <div className="flex h-screen items-center justify-center">
