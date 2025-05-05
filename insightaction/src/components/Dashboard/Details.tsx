@@ -24,6 +24,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { getHabitPerformedDates } from "@/actions/habit";
 import { useRouter } from "next/navigation";
 import { EditHabitModal } from "./edithabit";
+import ObstacleItem from "./ObstacleListCard";
+import {
+  deleteHabitObstacle,
+  updateHabitObstacle,
+  updateHabitObstacleById,
+} from "@/actions/habit/test";
+import e from "express";
+import { set } from "date-fns";
 
 const StatCard = ({ title, value, subtext, icon: Icon, color }: any) => (
   <div className="bg-dark rounded-lg border border-gray-600 p-4">
@@ -40,12 +48,86 @@ export default function HabitDetails({ habit }: { habit: any | null }) {
   const [date, setDate] = useState(new Date());
   const [performedDates, setPerformedDates] = useState<Date[]>([]);
   const [isEditOpen, setIsEdit] = useState(false);
+  const [obstacle, setObstacles] = useState<any[]>([]);
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (habit?.obstacles) {
+      setObstacles(habit.obstacles);
+    }
+  }, [habit]);
 
   const handleShare = () => {
     if (habit?.id) {
       router.push(`/share/${habit.id}`);
+    }
+  };
+
+  const handleObstacleSave = async (
+    obstacleId: string,
+    description?: string,
+    solution?: string,
+  ) => {
+    const updateObstacle = await updateHabitObstacleById(
+      obstacleId,
+      description,
+      solution,
+    );
+
+    if (updateObstacle.success) {
+      console.log("Obstacle updated successfully");
+      setObstacles((prev) =>
+        prev.map((obs) =>
+          obs.id === obstacleId
+            ? {...obs, description, solution}
+            : obs,
+        ),
+      );
+      return true;
+    } else {
+      console.error("Error updating obstacle:", updateObstacle.error);
+      return false;
+    }
+  };
+
+  const handleObstacleDelete = async (obstacleId: string) => {
+    console.log("Deleting obstacle with ID:", obstacleId);
+    const deleteObstacle = await deleteHabitObstacle(obstacleId);
+
+    if (deleteObstacle.success) {
+      console.log("Obstacle deleted successfully");
+      setObstacles((prev) =>
+        prev.filter((obstacle) => obstacle.id !== obstacleId),
+      );
+      return true;
+    } else {
+      console.error("Error deleting obstacle:", deleteObstacle.error);
+      return false;
+    }
+  };
+
+  const handleAddNewObstacle = async (
+    description: string,
+    solution: string,
+  ) => {
+    try {
+      console.log("New DATA:", habit?.id, description, solution);
+      const newObstacle = await updateHabitObstacle(habit?.id, {
+        description,
+        solution,
+      });
+      if (newObstacle?.success) {
+        console.log("New obstacle added successfully");
+        setObstacles(newObstacle.updatedHabit.obstacles);
+        return {success: true, newObstacle};
+      } else {
+        console.error("Error adding new obstacle:", newObstacle?.error);
+        return {error: newObstacle?.error};
+      }
+    } catch (error) {
+      console.error("Error adding new obstacle:", error);
+      return {error: "Error adding new obstacle"};
     }
   };
 
@@ -114,13 +196,13 @@ export default function HabitDetails({ habit }: { habit: any | null }) {
       </div>
       <div className="flex-1">
         <div className="space-y-4">
-          <StatCard
-            title="HIGHEST STREAK"
-            value={habit.streak}
-            icon={Flame}
-            color="text-orange-500"
-          />
           <div className="grid grid-cols-2 gap-4">
+            <StatCard
+              title="HIGHEST STREAK"
+              value={habit.streak}
+              icon={Flame}
+              color="text-orange-500"
+            />
             <StatCard
               title="COMPLETED"
               value={habit.completed}
@@ -128,7 +210,7 @@ export default function HabitDetails({ habit }: { habit: any | null }) {
               icon={Check}
               color="text-green-500"
             />
-            <StatCard
+            {/* <StatCard
               title="FAILED"
               value={habit.failed}
               subtext={
@@ -147,7 +229,7 @@ export default function HabitDetails({ habit }: { habit: any | null }) {
               icon={ArrowRight}
               color="text-blue-500"
             />
-            <StatCard title="TOTAL" value={habit.total} subtext="---" />
+            <StatCard title="TOTAL" value={habit.total} subtext="---" /> */}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-lg border border-gray-600">
@@ -162,29 +244,41 @@ export default function HabitDetails({ habit }: { habit: any | null }) {
               />
             </div>
             <div className="rounded-lg border border-gray-600 p-4">
-              <h3 className="mb-2 text-lg font-bold">Share your Progress</h3>
-              <p className="mb-4 text-sm text-gray-400">
+              <ObstacleItem
+                obstacle={obstacle}
+                onDelete={(id: string) => handleObstacleDelete(id)}
+                onSave={(
+                  obstacleId: string,
+                  description?: string,
+                  solution?: string,
+                ) => handleObstacleSave(obstacleId, description, solution)}
+                onAdd={(description: string, solution: string) =>
+                  handleAddNewObstacle(description, solution)
+                }
+              />
+            </div>
+
+            <div className="rounded-lg border border-gray-600 p-4">
+              <h3 className="mb-2 text-sm font-bold text-gray-400 ">
+                DESCRIPTION
+              </h3>
+              <p className="mb-4 text-sm text-white">
+                {habit.description || "Not Set"}
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-gray-600 p-4">
+              <h3 className="mb-2 text-sm font-bold text-gray-400">
+                SHARE YOUR PROGESS
+              </h3>
+              <p className="mb-4 text-xs text-white">
                 Sharing habit progress with others can massively increase your
                 chance of achieving your goals and sticking to this habit.
               </p>
-              
-              <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="icon" onClick={handleShare}>
-                  <Share2 size={18} />
-                </Button>
 
-              </div>
-            </div>
-            <div className="rounded-lg border border-gray-600 p-4">
-              <h3 className="mb-2 text-lg font-bold">Description</h3>
-              <p className="mb-4 text-sm text-gray-400">
-                {habit.description}
-              </p>
-              
-              <div className="flex items-center space-x-2">
-                
-         
-              </div>
+              <Button variant="ghost" size="icon" onClick={handleShare}>
+                <Share2 size={18} />
+              </Button>
             </div>
           </div>
         </div>

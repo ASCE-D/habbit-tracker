@@ -54,6 +54,7 @@ export const getHabitsForDay = async (
       },
       include: {
         trackedDays: true,
+        obstacles: true,
       },
     });
 
@@ -306,6 +307,10 @@ export const getTodos = async () => {
 };
 
 export const getTodoById = async (id: string) => {
+  const session = await getServerSession();
+  if (!session?.user?.email) {
+    return { error: "Unauthorized or insufficient permissions" };
+  }
   try {
     const todo = await prisma.todo.findFirst({ where: { id } });
     return { success: true, todo };
@@ -315,6 +320,11 @@ export const getTodoById = async (id: string) => {
 };
 
 export const markTodo = async (id: string) => {
+  const session = await getServerSession();
+  if (!session?.user?.email) {
+    return { error: "Unauthorized or insufficient permissions" };
+  }
+
   try {
     const todo = await prisma.todo.update({
       where: { id },
@@ -323,5 +333,79 @@ export const markTodo = async (id: string) => {
     return { success: true, todo };
   } catch (error: any) {
     return { error: error.message || "Failed to mark todo" };
+  }
+};
+
+export const updateHabitObstacle = async (
+  habitId: string,
+  obstacle: { description: string; solution: string },
+) => {
+  const session = await getServerSession();
+  if (!session?.user?.email) {
+    return { error: "Unauthorized or insufficient permissions" };
+  }
+
+  try {
+    const habit = await prisma.habit.findUnique({
+      where: { id: habitId },
+    });
+
+    if (!habit) {
+      return { error: "Habit not found" };
+    }
+
+    const updatedHabit = await prisma.habit.update({
+      where: { id: habitId },
+      data: {
+        obstacles: {
+          create: {
+            ...obstacle,
+          },
+        },
+      },
+      include: {
+        obstacles: true,
+      },
+    });
+
+    return { success: true, updatedHabit };
+  } catch (error) {}
+};
+
+export const deleteHabitObstacle = async (id: string) => {
+  const session = await getServerSession();
+  if (!session?.user?.email) {
+    return { error: "Unauthorized or insufficient permissions" };
+  }
+
+  try {
+    const obstacle = await prisma.obstacle.delete({ where: { id } });
+    return { success: true, obstacle };
+  } catch (error: any) {
+    return { error: error.message || "Failed to delete obstacle" };
+  }
+};
+
+export const updateHabitObstacleById = async (
+  id: string,
+  description?: string | null,
+  solution?: string | null,
+) => {
+  const session = await getServerSession();
+  if (!session?.user?.email) {
+    return { error: "Unauthorized or insufficient permissions" };
+  }
+
+  try {
+    const obstacle = await prisma.obstacle.update({
+      where: { id },
+      data: {
+        ...(description !== null ? { description } : {}),
+        ...(solution !== null ? { solution } : {}),
+      },
+    });
+    return { success: true, obstacle };
+  } catch (error: any) {
+    return { error: error.message || "Failed to update obstacle" };
   }
 };
